@@ -20,7 +20,7 @@ struct ContentView: View {
     @State private var selection = FamilyActivitySelection()
     // Controls whether the picker sheet is showing
     @State private var isPresented = false
-    @State private var dailyLimitMinutes: Int = 5
+    @State private var dailyLimitMinutes: Int = 1
     // Unique identifier for your monitoring schedule
     @State private var activityName = DeviceActivityName("DailyLimit")
     
@@ -53,6 +53,8 @@ struct ContentView: View {
         )
         
         let center = DeviceActivityCenter()
+        // Save selection to App Group first
+        saveSelectionToAppGroup()
         
         do {
             // Pass the event to startMonitoring
@@ -64,6 +66,20 @@ struct ContentView: View {
             print("Monitoring started with \(dailyLimitMinutes) min limit")
         } catch {
             print("Failed to start monitoring: \(error)")
+        }
+    }
+    
+    func saveSelectionToAppGroup() {
+        let defaults = UserDefaults(suiteName: "group.com.01labs.kaizen")
+        
+        // Convert selection to data we can save
+        do {
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(selection)
+            defaults?.set(data, forKey: "selectedApps")
+            print("✅ Saved selection to App Group")
+        } catch {
+            print("❌ Failed to save selection: \(error)")
         }
     }
     
@@ -83,7 +99,7 @@ struct ContentView: View {
             
             Stepper("Daily Limit: \(dailyLimitMinutes) minutes",
                     value: $dailyLimitMinutes,
-                    in: 5...480,
+                    in: 1...480,
                     step: 1)
             .padding()
             
@@ -100,7 +116,7 @@ struct ContentView: View {
             await requestAuthorization()
         }
     }
-}
+}  
 
 #Preview {
     ContentView()
