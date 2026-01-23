@@ -106,6 +106,14 @@ struct ContentView: View {
             Button("Start Monitoring") {
                 setUpMonitoring()
             }.buttonStyle(.borderedProminent)
+            
+            Button("🔓 Manual Unblock (Testing)") {
+                let store = ManagedSettingsStore()
+                store.clearAllSettings()
+                print("Manually cleared all shields")
+            }
+            .buttonStyle(.bordered)
+            .foregroundColor(.red)
         }
         
         // Modifiers are instructors and not sequential pieces of code

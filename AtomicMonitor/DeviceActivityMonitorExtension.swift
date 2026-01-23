@@ -20,9 +20,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     }
     
     override func intervalDidEnd(for activity: DeviceActivityName) {
-        super.intervalDidEnd(for: activity)
-        
-        // Handle the end of the interval.
+        let store = ManagedSettingsStore()
+        store.clearAllSettings()
+        print("🌙 Interval ended - all apps unblocked")
     }
     
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
@@ -64,7 +64,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             print("❌ Failed to decode selection: \(error)")
         }
     }
-    
     
     override func intervalWillStartWarning(for activity: DeviceActivityName) {
         super.intervalWillStartWarning(for: activity)
