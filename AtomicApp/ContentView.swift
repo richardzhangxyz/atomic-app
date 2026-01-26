@@ -11,18 +11,13 @@ import ManagedSettings
 import DeviceActivity
 
 struct ContentView: View {
-    // object with shared property shared across the app
-    // checks if this app has the permission to adjust screen time
     let center = AuthorizationCenter.shared
     
-    // Stores which apps the user picks
-    // FamilyActivitySelection is Apple's privacy-protected struct that contains apps, websites, and categories
     @State private var selection = FamilyActivitySelection()
-    // Controls whether the picker sheet is showing
     @State private var isPresented = false
     @State private var dailyLimitMinutes: Int = 1
-    // Unique identifier for your monitoring schedule
     @State private var activityName = DeviceActivityName("DailyLimit")
+    @State private var isMonitoring: Bool = false
     
     func requestAuthorization() async {
         do {
@@ -39,25 +34,17 @@ struct ContentView: View {
             repeats: true
         )
         
-        // Transform each item in the set and extract just its token
         let applicationTokens = selection.applications.compactMap { $0.token }
-        
-        // Creates a unique identifier for this specific event.
         let eventName = DeviceActivityEvent.Name("LimitReached")
-        // Struct as rule for when to trigger the event
         let event = DeviceActivityEvent(
-            // Watch these specific apps
             applications: Set(applicationTokens),
-            // threshold to fire
             threshold: DateComponents(minute: dailyLimitMinutes)
         )
         
         let center = DeviceActivityCenter()
-        // Save selection to App Group first
         saveSelectionToAppGroup()
         
         do {
-            // Pass the event to startMonitoring
             try center.startMonitoring(
                 activityName,
                 during: schedule,
@@ -72,17 +59,31 @@ struct ContentView: View {
     func saveSelectionToAppGroup() {
         let defaults = UserDefaults(suiteName: "group.com.01labs.kaizen")
         
-        // Convert selection to data we can save
         do {
             let encoder = JSONEncoder()
             let data = try encoder.encode(selection)
             defaults?.set(data, forKey: "selectedApps")
+            defaults?.set(dailyLimitMinutes, forKey: "dailyLimit")
+            defaults?.set(true, forKey: "isMonitoring")
             print("✅ Saved selection to App Group")
         } catch {
             print("❌ Failed to save selection: \(error)")
         }
     }
     
+    func loadSavedSelection() {
+        guard let defaults = UserDefaults(suiteName: "group.com.01labs.kaizen"),
+              let data = defaults.data(forKey: "selectedApps"),
+              let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) else {
+            print("📭 No saved selection found")
+            return
+        }
+        
+        selection = saved
+        dailyLimitMinutes = defaults.integer(forKey: "dailyLimit")
+        isMonitoring = defaults.bool(forKey: "isMonitoring")
+        print("✅ Loaded \(saved.applications.count) apps from previous session")
+    }
     
     var body: some View {
         VStack (spacing: 10){
@@ -105,7 +106,33 @@ struct ContentView: View {
             
             Button("Start Monitoring") {
                 setUpMonitoring()
-            }.buttonStyle(.borderedProminent)
+                isMonitoring = true
+            }
+            .buttonStyle(.borderedProminent)
+            
+            if isMonitoring {
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(.green)
+                            .frame(width: 10, height: 10)
+                        Text("Active")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                    
+                    Text("Monitoring \(selection.applications.count) app(s)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Text("Limit: \(dailyLimitMinutes) min/day")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(Color.green.opacity(0.1))
+                .cornerRadius(8)
+            }
             
             Button("🔓 Manual Unblock (Testing)") {
                 let store = ManagedSettingsStore()
@@ -115,16 +142,16 @@ struct ContentView: View {
             .buttonStyle(.bordered)
             .foregroundColor(.red)
         }
-        
-        // Modifiers are instructors and not sequential pieces of code
         .padding()
-        // When isPresentedis true, show the FamilyActivityPicker
         .familyActivityPicker(isPresented: $isPresented, selection: $selection)
         .task {
             await requestAuthorization()
         }
+        .onAppear {
+            loadSavedSelection()
+        }
     }
-}  
+}
 
 #Preview {
     ContentView()
