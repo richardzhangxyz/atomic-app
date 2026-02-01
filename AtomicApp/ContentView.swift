@@ -13,11 +13,17 @@ import DeviceActivity
 struct ContentView: View {
     let center = AuthorizationCenter.shared
     
+    @EnvironmentObject var unlockManager: UnlockManager
+    
     @State private var selection = FamilyActivitySelection()
     @State private var isPresented = false
     @State private var dailyLimitMinutes: Int = 1
     @State private var activityName = DeviceActivityName("DailyLimit")
     @State private var isMonitoring: Bool = false
+    @State private var showPauseModal: Bool = false
+    @State private var showEventLog: Bool = false
+    @State private var isBlocked: Bool = false
+    @State private var attemptCount: Int = 0
     
     func requestAuthorization() async {
         do {
@@ -82,11 +88,71 @@ struct ContentView: View {
         selection = saved
         dailyLimitMinutes = defaults.integer(forKey: "dailyLimit")
         isMonitoring = defaults.bool(forKey: "isMonitoring")
+        isBlocked = defaults.bool(forKey: "isBlocked")
+        attemptCount = defaults.integer(forKey: "attemptCount")
         print("✅ Loaded \(saved.applications.count) apps from previous session")
+    }
+    
+    func checkBlockedStatus() {
+        let defaults = UserDefaults(suiteName: "group.com.01labs.kaizen")
+        isBlocked = defaults?.bool(forKey: "isBlocked") ?? false
+        attemptCount = defaults?.integer(forKey: "attemptCount") ?? 0
+    }
+    
+    func unlockApps() {
+        let store = ManagedSettingsStore()
+        store.clearAllSettings()
+        
+        let defaults = UserDefaults(suiteName: "group.com.01labs.kaizen")
+        defaults?.set(false, forKey: "isBlocked")
+        defaults?.set(0, forKey: "attemptCount")
+        
+        isBlocked = false
+        attemptCount = 0
+        print("✅ Apps unlocked")
     }
     
     var body: some View {
         VStack (spacing: 10){
+            // Unlock section when apps are blocked
+            if isBlocked {
+                VStack(spacing: 12) {
+                    Text("⏸️ Apps Blocked")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Text("Your apps have reached their time limit.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                    
+                    Button {
+                        showPauseModal = true
+                    } label: {
+                        Text("Unlock Apps")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 0.5, green: 0.4, blue: 0.7),
+                                        Color(red: 0.4, green: 0.5, blue: 0.75)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(12)
+                    }
+                }
+                .padding()
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(12)
+                .padding(.horizontal)
+            }
+            
             Button("Select Apps to Limit") {
                 isPresented = true
             }
@@ -141,18 +207,65 @@ struct ContentView: View {
             }
             .buttonStyle(.bordered)
             .foregroundColor(.red)
+            
+            Button("⏸️ Test Pause Modal") {
+                showPauseModal = true
+            }
+            .buttonStyle(.bordered)
+            .foregroundColor(.blue)
+            
+            Button("📊 View Pause Log") {
+                showEventLog = true
+            }
+            .buttonStyle(.bordered)
+            .foregroundColor(.purple)
         }
         .padding()
         .familyActivityPicker(isPresented: $isPresented, selection: $selection)
+        .fullScreenCover(isPresented: $showPauseModal) {
+            PauseModalView(
+                appName: unlockManager.pendingAppName ?? (selection.applications.isEmpty ? "Blocked App" : "App"),
+                attemptCount: max(attemptCount, 1),
+                onProceed: {
+                    unlockApps()
+                    unlockManager.clearPendingRequest()
+                    showPauseModal = false
+                    print("✅ User proceeded intentionally - apps unlocked")
+                },
+                onClose: {
+                    showPauseModal = false
+                    unlockManager.showUnlockModal = false
+                    attemptCount += 1
+                    let defaults = UserDefaults(suiteName: "group.com.01labs.kaizen")
+                    defaults?.set(attemptCount, forKey: "attemptCount")
+                    print("❌ User closed without proceeding - attempt count: \(attemptCount)")
+                }
+            )
+        }
+        .sheet(isPresented: $showEventLog) {
+            PauseEventLogView()
+        }
         .task {
             await requestAuthorization()
         }
         .onAppear {
             loadSavedSelection()
+            checkBlockedStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            checkBlockedStatus()
+            // Check for pending unlock requests from shield
+            unlockManager.checkPendingUnlockRequest()
+        }
+        .onChange(of: unlockManager.showUnlockModal) { _, shouldShow in
+            if shouldShow && !showPauseModal {
+                showPauseModal = true
+            }
         }
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(UnlockManager.shared)
 }

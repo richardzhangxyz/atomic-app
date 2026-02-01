@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4D7B88062F2FFAD60051872F /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D7B88052F2FFAD50051872F /* ManagedSettings.framework */; };
+		4D7B88082F2FFAD60051872F /* ManagedSettingsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D7B88072F2FFAD60051872F /* ManagedSettingsUI.framework */; };
+		4D7B88102F2FFAD60051872F /* AtomicShieldConfiguration.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4D7B88042F2FFAD50051872F /* AtomicShieldConfiguration.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4D7B881A2F2FFAEF0051872F /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D7B88052F2FFAD50051872F /* ManagedSettings.framework */; };
+		4D7B88222F2FFAEF0051872F /* AtomicShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4D7B88192F2FFAEF0051872F /* AtomicShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4D7D2C722F21AEA5009B2D69 /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D7D2C712F21AEA4009B2D69 /* DeviceActivity.framework */; };
 		4D7D2C7A2F21AEA5009B2D69 /* AtomicMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4D7D2C6F2F21AEA4009B2D69 /* AtomicMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -26,6 +31,20 @@
 			remoteGlobalIDString = 4D59062E2F1F230E005FF767;
 			remoteInfo = AtomicApp;
 		};
+		4D7B880E2F2FFAD60051872F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4D5906272F1F230D005FF767 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D7B88032F2FFAD50051872F;
+			remoteInfo = AtomicShieldConfiguration;
+		};
+		4D7B88202F2FFAEF0051872F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4D5906272F1F230D005FF767 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D7B88182F2FFAEF0051872F;
+			remoteInfo = AtomicShieldAction;
+		};
 		4D7D2C782F21AEA5009B2D69 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4D5906272F1F230D005FF767 /* Project object */;
@@ -43,6 +62,8 @@
 			dstSubfolderSpec = 13;
 			files = (
 				4D7D2C7A2F21AEA5009B2D69 /* AtomicMonitor.appex in Embed Foundation Extensions */,
+				4D7B88222F2FFAEF0051872F /* AtomicShieldAction.appex in Embed Foundation Extensions */,
+				4D7B88102F2FFAD60051872F /* AtomicShieldConfiguration.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -53,6 +74,10 @@
 		4D59062F2F1F230E005FF767 /* AtomicApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AtomicApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D59063C2F1F2313005FF767 /* AtomicAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AtomicAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D5906462F1F2313005FF767 /* AtomicAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AtomicAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D7B88042F2FFAD50051872F /* AtomicShieldConfiguration.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AtomicShieldConfiguration.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D7B88052F2FFAD50051872F /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = System/Library/Frameworks/ManagedSettings.framework; sourceTree = SDKROOT; };
+		4D7B88072F2FFAD60051872F /* ManagedSettingsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettingsUI.framework; path = System/Library/Frameworks/ManagedSettingsUI.framework; sourceTree = SDKROOT; };
+		4D7B88192F2FFAEF0051872F /* AtomicShieldAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AtomicShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D7D2C6F2F21AEA4009B2D69 /* AtomicMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AtomicMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D7D2C712F21AEA4009B2D69 /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -64,6 +89,20 @@
 				Info.plist,
 			);
 			target = 4D59062E2F1F230E005FF767 /* AtomicApp */;
+		};
+		4D7B88142F2FFAD60051872F /* Exceptions for "AtomicShieldConfiguration" folder in "AtomicShieldConfiguration" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4D7B88032F2FFAD50051872F /* AtomicShieldConfiguration */;
+		};
+		4D7B88262F2FFAEF0051872F /* Exceptions for "AtomicShieldAction" folder in "AtomicShieldAction" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4D7B88182F2FFAEF0051872F /* AtomicShieldAction */;
 		};
 		4D7D2C7F2F21AEA5009B2D69 /* Exceptions for "AtomicMonitor" folder in "AtomicMonitor" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -91,6 +130,22 @@
 		4D5906492F1F2313005FF767 /* AtomicAppUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AtomicAppUITests;
+			sourceTree = "<group>";
+		};
+		4D7B88092F2FFAD60051872F /* AtomicShieldConfiguration */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4D7B88142F2FFAD60051872F /* Exceptions for "AtomicShieldConfiguration" folder in "AtomicShieldConfiguration" target */,
+			);
+			path = AtomicShieldConfiguration;
+			sourceTree = "<group>";
+		};
+		4D7B881B2F2FFAEF0051872F /* AtomicShieldAction */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4D7B88262F2FFAEF0051872F /* Exceptions for "AtomicShieldAction" folder in "AtomicShieldAction" target */,
+			);
+			path = AtomicShieldAction;
 			sourceTree = "<group>";
 		};
 		4D7D2C732F21AEA5009B2D69 /* AtomicMonitor */ = {
@@ -125,6 +180,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D7B88012F2FFAD50051872F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4D7B88062F2FFAD60051872F /* ManagedSettings.framework in Frameworks */,
+				4D7B88082F2FFAD60051872F /* ManagedSettingsUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4D7B88162F2FFAEF0051872F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4D7B881A2F2FFAEF0051872F /* ManagedSettings.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4D7D2C6C2F21AEA4009B2D69 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -143,6 +215,8 @@
 				4D59063F2F1F2313005FF767 /* AtomicAppTests */,
 				4D5906492F1F2313005FF767 /* AtomicAppUITests */,
 				4D7D2C732F21AEA5009B2D69 /* AtomicMonitor */,
+				4D7B88092F2FFAD60051872F /* AtomicShieldConfiguration */,
+				4D7B881B2F2FFAEF0051872F /* AtomicShieldAction */,
 				4D7D2C702F21AEA4009B2D69 /* Frameworks */,
 				4D5906302F1F230E005FF767 /* Products */,
 			);
@@ -155,6 +229,8 @@
 				4D59063C2F1F2313005FF767 /* AtomicAppTests.xctest */,
 				4D5906462F1F2313005FF767 /* AtomicAppUITests.xctest */,
 				4D7D2C6F2F21AEA4009B2D69 /* AtomicMonitor.appex */,
+				4D7B88042F2FFAD50051872F /* AtomicShieldConfiguration.appex */,
+				4D7B88192F2FFAEF0051872F /* AtomicShieldAction.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -163,6 +239,8 @@
 			isa = PBXGroup;
 			children = (
 				4D7D2C712F21AEA4009B2D69 /* DeviceActivity.framework */,
+				4D7B88052F2FFAD50051872F /* ManagedSettings.framework */,
+				4D7B88072F2FFAD60051872F /* ManagedSettingsUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -183,6 +261,8 @@
 			);
 			dependencies = (
 				4D7D2C792F21AEA5009B2D69 /* PBXTargetDependency */,
+				4D7B880F2F2FFAD60051872F /* PBXTargetDependency */,
+				4D7B88212F2FFAEF0051872F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				4D5906312F1F230E005FF767 /* AtomicApp */,
@@ -240,6 +320,50 @@
 			productReference = 4D5906462F1F2313005FF767 /* AtomicAppUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		4D7B88032F2FFAD50051872F /* AtomicShieldConfiguration */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D7B88112F2FFAD60051872F /* Build configuration list for PBXNativeTarget "AtomicShieldConfiguration" */;
+			buildPhases = (
+				4D7B88002F2FFAD50051872F /* Sources */,
+				4D7B88012F2FFAD50051872F /* Frameworks */,
+				4D7B88022F2FFAD50051872F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4D7B88092F2FFAD60051872F /* AtomicShieldConfiguration */,
+			);
+			name = AtomicShieldConfiguration;
+			packageProductDependencies = (
+			);
+			productName = AtomicShieldConfiguration;
+			productReference = 4D7B88042F2FFAD50051872F /* AtomicShieldConfiguration.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		4D7B88182F2FFAEF0051872F /* AtomicShieldAction */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D7B88232F2FFAEF0051872F /* Build configuration list for PBXNativeTarget "AtomicShieldAction" */;
+			buildPhases = (
+				4D7B88152F2FFAEF0051872F /* Sources */,
+				4D7B88162F2FFAEF0051872F /* Frameworks */,
+				4D7B88172F2FFAEF0051872F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4D7B881B2F2FFAEF0051872F /* AtomicShieldAction */,
+			);
+			name = AtomicShieldAction;
+			packageProductDependencies = (
+			);
+			productName = AtomicShieldAction;
+			productReference = 4D7B88192F2FFAEF0051872F /* AtomicShieldAction.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		4D7D2C6E2F21AEA4009B2D69 /* AtomicMonitor */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4D7D2C7E2F21AEA5009B2D69 /* Build configuration list for PBXNativeTarget "AtomicMonitor" */;
@@ -283,6 +407,12 @@
 						CreatedOnToolsVersion = 26.2;
 						TestTargetID = 4D59062E2F1F230E005FF767;
 					};
+					4D7B88032F2FFAD50051872F = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					4D7B88182F2FFAEF0051872F = {
+						CreatedOnToolsVersion = 26.2;
+					};
 					4D7D2C6E2F21AEA4009B2D69 = {
 						CreatedOnToolsVersion = 26.2;
 					};
@@ -306,6 +436,8 @@
 				4D59063B2F1F2313005FF767 /* AtomicAppTests */,
 				4D5906452F1F2313005FF767 /* AtomicAppUITests */,
 				4D7D2C6E2F21AEA4009B2D69 /* AtomicMonitor */,
+				4D7B88032F2FFAD50051872F /* AtomicShieldConfiguration */,
+				4D7B88182F2FFAEF0051872F /* AtomicShieldAction */,
 			);
 		};
 /* End PBXProject section */
@@ -326,6 +458,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4D5906442F1F2313005FF767 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4D7B88022F2FFAD50051872F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4D7B88172F2FFAEF0051872F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -363,6 +509,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D7B88002F2FFAD50051872F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4D7B88152F2FFAEF0051872F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4D7D2C6B2F21AEA4009B2D69 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -382,6 +542,16 @@
 			isa = PBXTargetDependency;
 			target = 4D59062E2F1F230E005FF767 /* AtomicApp */;
 			targetProxy = 4D5906472F1F2313005FF767 /* PBXContainerItemProxy */;
+		};
+		4D7B880F2F2FFAD60051872F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D7B88032F2FFAD50051872F /* AtomicShieldConfiguration */;
+			targetProxy = 4D7B880E2F2FFAD60051872F /* PBXContainerItemProxy */;
+		};
+		4D7B88212F2FFAEF0051872F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D7B88182F2FFAEF0051872F /* AtomicShieldAction */;
+			targetProxy = 4D7B88202F2FFAEF0051872F /* PBXContainerItemProxy */;
 		};
 		4D7D2C792F21AEA5009B2D69 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -664,6 +834,122 @@
 			};
 			name = Release;
 		};
+		4D7B88122F2FFAD60051872F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AtomicShieldConfiguration/AtomicShieldConfiguration.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8FMP9HM2V7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AtomicShieldConfiguration/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AtomicShieldConfiguration;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.01Labs.Kaizen.AtomicShieldConfiguration;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4D7B88132F2FFAD60051872F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AtomicShieldConfiguration/AtomicShieldConfiguration.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8FMP9HM2V7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AtomicShieldConfiguration/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AtomicShieldConfiguration;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.01Labs.Kaizen.AtomicShieldConfiguration;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		4D7B88242F2FFAEF0051872F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AtomicShieldAction/AtomicShieldAction.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8FMP9HM2V7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AtomicShieldAction/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AtomicShieldAction;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.01Labs.Kaizen.AtomicShieldAction;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4D7B88252F2FFAEF0051872F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AtomicShieldAction/AtomicShieldAction.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8FMP9HM2V7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AtomicShieldAction/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AtomicShieldAction;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.01Labs.Kaizen.AtomicShieldAction;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		4D7D2C7C2F21AEA5009B2D69 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -757,6 +1043,24 @@
 			buildConfigurations = (
 				4D5906572F1F2313005FF767 /* Debug */,
 				4D5906582F1F2313005FF767 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4D7B88112F2FFAD60051872F /* Build configuration list for PBXNativeTarget "AtomicShieldConfiguration" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4D7B88122F2FFAD60051872F /* Debug */,
+				4D7B88132F2FFAD60051872F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4D7B88232F2FFAEF0051872F /* Build configuration list for PBXNativeTarget "AtomicShieldAction" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4D7B88242F2FFAEF0051872F /* Debug */,
+				4D7B88252F2FFAEF0051872F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

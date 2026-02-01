@@ -58,7 +58,11 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 store.shield.applicationCategories = .specific(Set(categoryTokens))
             }
             
-            print("✅ Shield applied successfully")
+            // Mark as blocked and reset attempt count
+            defaults?.set(true, forKey: "isBlocked")
+            defaults?.set(1, forKey: "attemptCount")
+            
+            print("✅ Shield applied successfully - marked as blocked")
             
         } catch {
             print("❌ Failed to decode selection: \(error)")

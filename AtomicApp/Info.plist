@@ -4,5 +4,16 @@
 <dict>
 	<key>NSFamilyControlsUsageDescription</key>
 	<string>This app needs access to manage your Screen Time settings</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.01Labs.Kaizen</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>atomicapp</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
