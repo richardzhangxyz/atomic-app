@@ -25,6 +25,10 @@ struct ContentView: View {
     @State private var isBlocked: Bool = false
     @State private var attemptCount: Int = 0
     
+    // Toast state
+    @State private var toastMessage: String = ""
+    @State private var showToast: Bool = false
+    
     func requestAuthorization() async {
         do {
             try await center.requestAuthorization(for: .individual)
@@ -57,6 +61,36 @@ struct ContentView: View {
                 events: [eventName: event]
             )
             print("Monitoring started with \(dailyLimitMinutes) min limit")
+        } catch {
+            print("Failed to start monitoring: \(error)")
+        }
+    }
+    
+    /// Quick testing function with seconds instead of minutes
+    func setUpMonitoringWithSeconds(_ seconds: Int) {
+        let schedule = DeviceActivitySchedule(
+            intervalStart: DateComponents(hour: 0, minute: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59),
+            repeats: true
+        )
+        
+        let applicationTokens = selection.applications.compactMap { $0.token }
+        let eventName = DeviceActivityEvent.Name("LimitReached")
+        let event = DeviceActivityEvent(
+            applications: Set(applicationTokens),
+            threshold: DateComponents(second: seconds)
+        )
+        
+        let center = DeviceActivityCenter()
+        saveSelectionToAppGroup()
+        
+        do {
+            try center.startMonitoring(
+                activityName,
+                during: schedule,
+                events: [eventName: event]
+            )
+            print("⚡ TEST MODE: Monitoring started with \(seconds) SECOND limit")
         } catch {
             print("Failed to start monitoring: \(error)")
         }
@@ -112,7 +146,22 @@ struct ContentView: View {
         print("✅ Apps unlocked")
     }
     
+    func showToast(message: String) {
+        toastMessage = message
+        withAnimation(.easeInOut(duration: 0.3)) {
+            showToast = true
+        }
+        
+        // Auto-hide after 3 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                showToast = false
+            }
+        }
+    }
+    
     var body: some View {
+        ZStack {
         VStack (spacing: 10){
             // Unlock section when apps are blocked
             if isBlocked {
@@ -170,11 +219,28 @@ struct ContentView: View {
                     step: 1)
             .padding()
             
-            Button("Start Monitoring") {
-                setUpMonitoring()
-                isMonitoring = true
+            HStack(spacing: 12) {
+                Button("Start Monitoring") {
+                    setUpMonitoring()
+                    isMonitoring = true
+                }
+                .buttonStyle(.borderedProminent)
+                
+                // Quick 5-second test button
+                Button("5 sec test") {
+                    // First, clear all existing restrictions
+                    unlockApps()
+                    
+                    // Then set up fresh monitoring with 5 second limit
+                    setUpMonitoringWithSeconds(5)
+                    isMonitoring = true
+                    
+                    // Show toast
+                    showToast(message: "✓ Reset & started 5 sec limit for \(selection.applications.count) app(s)")
+                }
+                .buttonStyle(.bordered)
+                .foregroundColor(.orange)
             }
-            .buttonStyle(.borderedProminent)
             
             if isMonitoring {
                 VStack(spacing: 8) {
@@ -200,19 +266,39 @@ struct ContentView: View {
                 .cornerRadius(8)
             }
             
-            Button("🔓 Manual Unblock (Testing)") {
-                let store = ManagedSettingsStore()
-                store.clearAllSettings()
-                print("Manually cleared all shields")
+            Button("💀 Test Brutal Modal") {
+                showPauseModal = true
             }
             .buttonStyle(.bordered)
             .foregroundColor(.red)
             
-            Button("⏸️ Test Pause Modal") {
-                showPauseModal = true
+            // Debug: Show expected shield colors
+            VStack(spacing: 4) {
+                Text("Expected Shield Colors:")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                HStack(spacing: 8) {
+                    VStack {
+                        Rectangle()
+                            .fill(Color(red: 1.0, green: 0.929, blue: 0.161)) // #FFED29
+                            .frame(width: 50, height: 30)
+                            .cornerRadius(4)
+                        Text("Light")
+                            .font(.caption2)
+                    }
+                    VStack {
+                        Rectangle()
+                            .fill(Color(red: 0.702, green: 0.631, blue: 0.106)) // #B3A11B
+                            .frame(width: 50, height: 30)
+                            .cornerRadius(4)
+                        Text("Dark")
+                            .font(.caption2)
+                    }
+                }
             }
-            .buttonStyle(.bordered)
-            .foregroundColor(.blue)
+            .padding(8)
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(8)
             
             Button("📊 View Pause Log") {
                 showEventLog = true
@@ -221,24 +307,45 @@ struct ContentView: View {
             .foregroundColor(.purple)
         }
         .padding()
+        
+            // Toast overlay
+            if showToast {
+                VStack {
+                    Spacer()
+                    
+                    Text(toastMessage)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 14)
+                        .background(
+                            Capsule()
+                                .fill(Color.black.opacity(0.85))
+                        )
+                        .padding(.bottom, 40)
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        } // end ZStack
         .familyActivityPicker(isPresented: $isPresented, selection: $selection)
         .fullScreenCover(isPresented: $showPauseModal) {
-            PauseModalView(
+            BrutalBlockModalView(
                 appName: unlockManager.pendingAppName ?? (selection.applications.isEmpty ? "Blocked App" : "App"),
-                attemptCount: max(attemptCount, 1),
-                onProceed: {
+                minutesSpent: dailyLimitMinutes, // Using limit as proxy for time spent
+                onUnlock: {
                     unlockApps()
                     unlockManager.clearPendingRequest()
                     showPauseModal = false
-                    print("✅ User proceeded intentionally - apps unlocked")
+                    print("🔴 User unlocked — consequences accepted")
                 },
-                onClose: {
+                onStayBlocked: {
                     showPauseModal = false
                     unlockManager.showUnlockModal = false
                     attemptCount += 1
                     let defaults = UserDefaults(suiteName: "group.com.01labs.kaizen")
                     defaults?.set(attemptCount, forKey: "attemptCount")
-                    print("❌ User closed without proceeding - attempt count: \(attemptCount)")
+                    print("💪 User stayed blocked — doing the hard thing")
                 }
             )
         }
