@@ -14,6 +14,7 @@ struct ContentView: View {
     let center = AuthorizationCenter.shared
     
     @EnvironmentObject var unlockManager: UnlockManager
+    @Environment(\.colorScheme) var colorScheme
     
     @State private var selection = FamilyActivitySelection()
     @State private var isPresented = false
@@ -28,6 +29,50 @@ struct ContentView: View {
     // Toast state
     @State private var toastMessage: String = ""
     @State private var showToast: Bool = false
+    
+    // MARK: - Adaptive Color System
+    
+    // Background: Vivid gold in light mode, dark in dark mode
+    private var backgroundColor: Color {
+        colorScheme == .dark 
+            ? Color(red: 0.1, green: 0.1, blue: 0.1) 
+            : Color(red: 1.0, green: 0.85, blue: 0.0) // #FFD900
+    }
+    
+    // Primary text: Black in light mode, bright yellow in dark mode
+    private var primaryTextColor: Color {
+        colorScheme == .dark
+            ? Color(red: 1.0, green: 0.929, blue: 0.161) // #FFED29
+            : Color.black
+    }
+    
+    // Secondary text: Dark gray in light mode, dimmer yellow in dark mode
+    private var secondaryTextColor: Color {
+        colorScheme == .dark
+            ? Color(red: 0.9, green: 0.836, blue: 0.145)
+            : Color(red: 0.15, green: 0.15, blue: 0.15)
+    }
+    
+    // Card background: Semi-transparent white in light, semi-transparent yellow in dark
+    private var cardBackgroundColor: Color {
+        colorScheme == .dark
+            ? Color(red: 1.0, green: 0.929, blue: 0.161).opacity(0.15)
+            : Color.white.opacity(0.35)
+    }
+    
+    // Card background hover: Slightly more opaque
+    private var cardBackgroundColorHover: Color {
+        colorScheme == .dark
+            ? Color(red: 1.0, green: 0.929, blue: 0.161).opacity(0.25)
+            : Color.white.opacity(0.5)
+    }
+    
+    // Accent color for icons/highlights
+    private var accentColor: Color {
+        colorScheme == .dark
+            ? Color(red: 1.0, green: 0.929, blue: 0.161)
+            : Color.black
+    }
     
     func requestAuthorization() async {
         do {
@@ -162,152 +207,276 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-        VStack (spacing: 10){
-            // Unlock section when apps are blocked
-            if isBlocked {
-                VStack(spacing: 12) {
-                    Text("⏸️ Apps Blocked")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("Your apps have reached their time limit.")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                    
-                    Button {
-                        showPauseModal = true
-                    } label: {
-                        Text("Unlock Apps")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 0.5, green: 0.4, blue: 0.7),
-                                        Color(red: 0.4, green: 0.5, blue: 0.75)
-                                    ],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(12)
-                    }
-                }
-                .padding()
-                .background(Color.orange.opacity(0.1))
-                .cornerRadius(12)
-                .padding(.horizontal)
-            }
+            // Adaptive background: Gold in light mode, dark in dark mode
+            backgroundColor
+                .ignoresSafeArea()
             
-            Button("Select Apps to Limit") {
-                isPresented = true
-            }
-            
-            VStack (spacing: 10){
-                Text("Selected \(selection.applications.count) apps")
-                Text("Selected \(selection.categories.count) categories")
-                Text("Selected \(selection.webDomains.count) web domains")
-            }
-            .padding()
-            
-            Stepper("Daily Limit: \(dailyLimitMinutes) minutes",
-                    value: $dailyLimitMinutes,
-                    in: 1...480,
-                    step: 1)
-            .padding()
-            
-            HStack(spacing: 12) {
-                Button("Start Monitoring") {
-                    setUpMonitoring()
-                    isMonitoring = true
-                }
-                .buttonStyle(.borderedProminent)
-                
-                // Quick 5-second test button
-                Button("5 sec test") {
-                    // First, clear all existing restrictions
-                    unlockApps()
-                    
-                    // Then set up fresh monitoring with 5 second limit
-                    setUpMonitoringWithSeconds(5)
-                    isMonitoring = true
-                    
-                    // Show toast
-                    showToast(message: "✓ Reset & started 5 sec limit for \(selection.applications.count) app(s)")
-                }
-                .buttonStyle(.bordered)
-                .foregroundColor(.orange)
-            }
-            
-            if isMonitoring {
-                VStack(spacing: 8) {
-                    HStack(spacing: 8) {
-                        Circle()
-                            .fill(.green)
-                            .frame(width: 10, height: 10)
-                        Text("Active")
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Header
+                    VStack(spacing: 8) {
+                        Text("⚡ ATOMIC")
+                            .font(.system(size: 40, weight: .black, design: .rounded))
+                            .foregroundColor(primaryTextColor)
+                        
+                        Text("App time limits that actually work")
                             .font(.subheadline)
-                            .fontWeight(.medium)
+                            .foregroundColor(secondaryTextColor)
+                    }
+                    .padding(.top, 20)
+                    
+                    // BLOCKED STATE - High urgency
+                    if isBlocked {
+                        VStack(spacing: 16) {
+                            Image(systemName: "lock.shield.fill")
+                                .font(.system(size: 50))
+                                .foregroundColor(Color(red: 0.757, green: 0.071, blue: 0.122))
+                            
+                            Text("APPS BLOCKED")
+                                .font(.system(size: 26, weight: .bold))
+                                .foregroundColor(primaryTextColor)
+                            
+                            Text("Time limit reached")
+                                .font(.body)
+                                .foregroundColor(secondaryTextColor)
+                            
+                            Button {
+                                showPauseModal = true
+                            } label: {
+                                Text("Unlock")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 16)
+                                    .background(Color(red: 0.757, green: 0.071, blue: 0.122))
+                                    .cornerRadius(12)
+                            }
+                            .padding(.horizontal)
+                        }
+                        .padding(.vertical, 20)
+                        .background(cardBackgroundColor)
+                        .cornerRadius(16)
+                        .padding(.horizontal)
                     }
                     
-                    Text("Monitoring \(selection.applications.count) app(s)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    // SETUP SECTION
+                    VStack(spacing: 20) {
+                        VStack(spacing: 8) {
+                            HStack {
+                                Text("SETUP")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(primaryTextColor)
+                                Spacer()
+                            }
+                        }
+                        .padding(.horizontal)
+                        
+                        // App Selection
+                        VStack(spacing: 12) {
+                            Button {
+                                isPresented = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: selection.applications.isEmpty ? "app.badge.plus" : "app.badge.checkmark.fill")
+                                        .font(.title2)
+                                        .foregroundColor(accentColor)
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(selection.applications.isEmpty ? "Choose Apps to Control" : "Apps Selected")
+                                            .font(.headline)
+                                            .foregroundColor(primaryTextColor)
+                                        
+                                        if !selection.applications.isEmpty {
+                                            Text("\(selection.applications.count) app(s) · \(selection.categories.count) category · \(selection.webDomains.count) domain(s)")
+                                                .font(.caption)
+                                                .foregroundColor(secondaryTextColor)
+                                        }
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(secondaryTextColor.opacity(0.5))
+                                }
+                                .padding(20)
+                                .background(cardBackgroundColor)
+                                .cornerRadius(16)
+                            }
+                            .padding(.horizontal)
+                        }
+                        
+                        // Time Limit
+                        VStack(spacing: 12) {
+                            HStack {
+                                Image(systemName: "clock.fill")
+                                    .font(.title2)
+                                    .foregroundColor(accentColor)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Daily Limit")
+                                        .font(.headline)
+                                        .foregroundColor(primaryTextColor)
+                                    Text("Set your boundary")
+                                        .font(.caption)
+                                        .foregroundColor(secondaryTextColor)
+                                }
+                                
+                                Spacer()
+                                
+                                Text("\(dailyLimitMinutes) min")
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundColor(primaryTextColor)
+                            }
+                            .padding(20)
+                            .background(cardBackgroundColor)
+                            .cornerRadius(16)
+                            
+                            Stepper("", value: $dailyLimitMinutes, in: 1...480, step: 1)
+                                .labelsHidden()
+                                .padding(.horizontal)
+                        }
+                        .padding(.horizontal)
+                        
+                        // Action Buttons
+                        VStack(spacing: 12) {
+                            if !isMonitoring {
+                                Button {
+                                    setUpMonitoring()
+                                    isMonitoring = true
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "bolt.fill")
+                                            .font(.title2)
+                                        Text("Start Monitoring")
+                                            .font(.system(size: 18, weight: .bold))
+                                    }
+                                    .foregroundColor(colorScheme == .dark ? Color.black : Color.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 16)
+                                    .background(colorScheme == .dark ? Color(red: 1.0, green: 0.929, blue: 0.161) : Color.black)
+                                    .cornerRadius(12)
+                                }
+                                .disabled(selection.applications.isEmpty)
+                                .opacity(selection.applications.isEmpty ? 0.5 : 1.0)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
                     
-                    Text("Limit: \(dailyLimitMinutes) min/day")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding()
-                .background(Color.green.opacity(0.1))
-                .cornerRadius(8)
-            }
-            
-            Button("💀 Test Brutal Modal") {
-                showPauseModal = true
-            }
-            .buttonStyle(.bordered)
-            .foregroundColor(.red)
-            
-            // Debug: Show expected shield colors
-            VStack(spacing: 4) {
-                Text("Expected Shield Colors:")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                HStack(spacing: 8) {
-                    VStack {
-                        Rectangle()
-                            .fill(Color(red: 1.0, green: 0.929, blue: 0.161)) // #FFED29
-                            .frame(width: 50, height: 30)
-                            .cornerRadius(4)
-                        Text("Light")
-                            .font(.caption2)
+                    // MONITORING STATUS
+                    if isMonitoring {
+                        VStack(spacing: 16) {
+                            HStack(spacing: 12) {
+                                Circle()
+                                    .fill(.green)
+                                    .frame(width: 12, height: 12)
+                                
+                                Text("ACTIVE")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(primaryTextColor)
+                                
+                                Spacer()
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text("Monitoring")
+                                        .font(.subheadline)
+                                        .foregroundColor(secondaryTextColor)
+                                    Spacer()
+                                    Text("\(selection.applications.count) app(s)")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(primaryTextColor)
+                                }
+                                
+                                HStack {
+                                    Text("Daily Limit")
+                                        .font(.subheadline)
+                                        .foregroundColor(secondaryTextColor)
+                                    Spacer()
+                                    Text("\(dailyLimitMinutes) min")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(primaryTextColor)
+                                }
+                            }
+                        }
+                        .padding(20)
+                        .background(cardBackgroundColor)
+                        .cornerRadius(16)
+                        .padding(.horizontal)
                     }
-                    VStack {
-                        Rectangle()
-                            .fill(Color(red: 0.702, green: 0.631, blue: 0.106)) // #B3A11B
-                            .frame(width: 50, height: 30)
-                            .cornerRadius(4)
-                        Text("Dark")
-                            .font(.caption2)
+                    
+                    // TESTING & LOGS (condensed)
+                    VStack(spacing: 12) {
+                        HStack {
+                            Text("⚙️ TESTING")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(secondaryTextColor.opacity(0.7))
+                            Spacer()
+                        }
+                        .padding(.horizontal)
+                        
+                        HStack(spacing: 12) {
+                            Button {
+                                unlockApps()
+                                setUpMonitoringWithSeconds(5)
+                                isMonitoring = true
+                                showToast(message: "⚡ 5 sec test started")
+                            } label: {
+                                HStack {
+                                    Image(systemName: "hare.fill")
+                                    Text("5s Test")
+                                        .fontWeight(.semibold)
+                                }
+                                .font(.subheadline)
+                                .foregroundColor(primaryTextColor)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(cardBackgroundColorHover)
+                                .cornerRadius(12)
+                            }
+                            
+                            Button {
+                                showPauseModal = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "shield.fill")
+                                    Text("Test Shield")
+                                        .fontWeight(.semibold)
+                                }
+                                .font(.subheadline)
+                                .foregroundColor(primaryTextColor)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(cardBackgroundColorHover)
+                                .cornerRadius(12)
+                            }
+                            
+                            Button {
+                                showEventLog = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "chart.bar.fill")
+                                    Text("Log")
+                                        .fontWeight(.semibold)
+                                }
+                                .font(.subheadline)
+                                .foregroundColor(primaryTextColor)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(cardBackgroundColorHover)
+                                .cornerRadius(12)
+                            }
+                        }
+                        .padding(.horizontal)
                     }
+                    .padding(.top, 8)
+                    .padding(.bottom, 40)
                 }
             }
-            .padding(8)
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(8)
             
-            Button("📊 View Pause Log") {
-                showEventLog = true
-            }
-            .buttonStyle(.bordered)
-            .foregroundColor(.purple)
-        }
-        .padding()
-        
             // Toast overlay
             if showToast {
                 VStack {
@@ -332,7 +501,7 @@ struct ContentView: View {
         .fullScreenCover(isPresented: $showPauseModal) {
             BrutalBlockModalView(
                 appName: unlockManager.pendingAppName ?? (selection.applications.isEmpty ? "Blocked App" : "App"),
-                minutesSpent: dailyLimitMinutes, // Using limit as proxy for time spent
+                minutesSpent: dailyLimitMinutes,
                 onUnlock: {
                     unlockApps()
                     unlockManager.clearPendingRequest()
@@ -361,7 +530,6 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             checkBlockedStatus()
-            // Check for pending unlock requests from shield
             unlockManager.checkPendingUnlockRequest()
         }
         .onChange(of: unlockManager.showUnlockModal) { _, shouldShow in

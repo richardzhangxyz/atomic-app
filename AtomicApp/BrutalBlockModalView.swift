@@ -2,7 +2,7 @@
 //  BrutalBlockModalView.swift
 //  AtomicApp
 //
-//  Construction zone warning modal - safety yellow, high contrast, unmissable
+//  Intentional unlock modal - requires deliberate choice to bypass limits
 //
 
 import SwiftUI
@@ -21,18 +21,24 @@ struct BrutalBlockModalView: View {
     
     // State
     @State private var confirmationText: String = ""
+    @State private var signatureLines: [[CGPoint]] = []
+    @State private var currentLine: [CGPoint] = []
     @State private var showView = false
     @State private var sessionStartTime = Date()
-    @State private var selectedQuote: String = ""
+    @FocusState private var focusedField: Field?
     
-    // Required phrase to unlock (friction)
-    private let requiredPhrase = "GET BACK TO WORK"
+    enum Field: Hashable {
+        case confirmation
+    }
     
-    // CONSTRUCTION ZONE COLOR SYSTEM (Dark Mode Compatible)
-    // PRIMARY: HIGHLIGHTER YELLOW (bright, vivid)
-    private let safetyYellow = Color(red: 1.0, green: 0.929, blue: 0.161) // #FFED29
-    // DARK MODE: Darker golden yellow for reduced eye strain
-    private let safetyYellowDark = Color(red: 0.702, green: 0.631, blue: 0.106) // #B3A11B
+    // Required phrase to unlock (intentional friction)
+    private let requiredPhrase = "I am making an intentional choice"
+    
+    // COLOR SYSTEM (Dark Mode Compatible)
+    // PRIMARY: Vivid gold
+    private let safetyYellow = Color(red: 1.0, green: 0.85, blue: 0.0) // #FFD900
+    // DARK MODE: Darker for reduced eye strain
+    private let safetyYellowDark = Color(red: 0.1, green: 0.1, blue: 0.1) // Dark gray
     
     // Background: bright yellow in light mode, darker golden in dark mode
     private var bgColor: Color {
@@ -43,37 +49,44 @@ struct BrutalBlockModalView: View {
     private let hazardRed = Color(red: 0.757, green: 0.071, blue: 0.122) // #C1121F
     
     // Text colors (adaptive)
-    private var textOnYellow: Color {
-        // Always use dark text on bright yellow for readability
-        Color(red: 0.043, green: 0.043, blue: 0.043) // #0B0B0B
-    }
-    
     private var textPrimary: Color {
-        textOnYellow
+        colorScheme == .dark 
+            ? Color(red: 1.0, green: 0.929, blue: 0.161) // Bright yellow
+            : Color.black
     }
     
     private var textSecondary: Color {
-        Color.black.opacity(colorScheme == .dark ? 0.75 : 0.65)
+        colorScheme == .dark
+            ? Color(red: 0.9, green: 0.836, blue: 0.145)
+            : Color(red: 0.15, green: 0.15, blue: 0.15)
     }
     
     private var textDeemphasized: Color {
-        Color.black.opacity(colorScheme == .dark ? 0.55 : 0.45)
+        colorScheme == .dark
+            ? textSecondary.opacity(0.6)
+            : Color.black.opacity(0.5)
     }
     
     private var dividerColor: Color {
-        Color.black.opacity(colorScheme == .dark ? 0.75 : 0.6)
+        textSecondary.opacity(0.3)
     }
     
     private var fieldBackground: Color {
-        Color.black.opacity(colorScheme == .dark ? 0.85 : 0.8)
+        colorScheme == .dark
+            ? Color.white.opacity(0.1)
+            : Color.white.opacity(0.4)
     }
     
     private var primaryButtonBackground: Color {
-        Color.black
+        colorScheme == .dark
+            ? Color(red: 1.0, green: 0.929, blue: 0.161)
+            : Color.black
     }
     
     private var primaryButtonText: Color {
-        safetyYellow
+        colorScheme == .dark
+            ? Color.black
+            : Color(red: 1.0, green: 0.85, blue: 0.0)
     }
     
     private var dangerButtonText: Color {
@@ -81,61 +94,60 @@ struct BrutalBlockModalView: View {
     }
     
     private var disabledButtonBackground: Color {
-        Color.black.opacity(colorScheme == .dark ? 0.35 : 0.25)
+        textSecondary.opacity(0.2)
     }
     
-    // Rotating quotes
-    private let quotes = [
-        "NO ONE IS COMING TO SAVE YOU.",
-        "YOU DON'T GET BETTER BY DOING WHAT'S EASY.",
-        "EVERYONE WANTS TO BE SUCCESSFUL. FEW ARE WILLING TO DO WHAT IT TAKES."
-    ]
-    
     private var isUnlockEnabled: Bool {
-        confirmationText.uppercased().trimmingCharacters(in: .whitespaces) == requiredPhrase
+        let phraseMatches = confirmationText.trimmingCharacters(in: .whitespaces).lowercased() == requiredPhrase.lowercased()
+        let hasSignature = !signatureLines.isEmpty
+        return phraseMatches && hasSignature
     }
     
     var body: some View {
         ZStack {
-            // Near-black background
+            // Background
             bgColor.ignoresSafeArea()
             
-            ScrollView {
-                VStack(spacing: 32) {
-                    Spacer().frame(height: 40)
-                    
-                    // MARK: - Header
-                    headerSection
-                    
-                    // MARK: - Main Statement
-                    mainStatementSection
-                    
-                    // MARK: - Reality Check
-                    realityCheckSection
-                    
-                    // MARK: - Quote
-                    quoteSection
-                    
-                    Spacer().frame(height: 20)
-                    
-                    // MARK: - Confirmation Input
-                    confirmationSection
-                    
-                    // MARK: - Actions
-                    actionsSection
-                    
-                    Spacer().frame(height: 40)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: 32) {
+                        Spacer().frame(height: 40)
+                        
+                        // MARK: - Header
+                        headerSection
+                        
+                        // MARK: - Main Statement
+                        mainStatementSection
+                        
+                        // MARK: - Reality Check
+                        realityCheckSection
+                        
+                        Spacer().frame(height: 20)
+                        
+                        // MARK: - Confirmation Input
+                        confirmationSection
+                            .id("confirmationSection")
+                        
+                        // MARK: - Actions
+                        actionsSection
+                        
+                        Spacer().frame(height: 40)
+                    }
+                    .padding(.horizontal, 24)
                 }
-                .padding(.horizontal, 24)
+                .onChange(of: focusedField) { _, newValue in
+                    if newValue != nil {
+                        withAnimation {
+                            proxy.scrollTo("confirmationSection", anchor: .center)
+                        }
+                    }
+                }
             }
             .opacity(showView ? 1 : 0)
         }
         .onAppear {
-            // Select random quote
-            selectedQuote = quotes.randomElement() ?? quotes[0]
-            
-            // Heavy haptic on appear
-            let generator = UIImpactFeedbackGenerator(style: .heavy)
+            // Light haptic on appear
+            let generator = UIImpactFeedbackGenerator(style: .medium)
             generator.impactOccurred()
             
             withAnimation(.easeOut(duration: 0.3)) {
@@ -148,15 +160,13 @@ struct BrutalBlockModalView: View {
     
     private var headerSection: some View {
         VStack(spacing: 12) {
-            Text("STOP SCROLLING.")
-                .font(.system(size: 32, weight: .black, design: .default))
-                .tracking(2)
-                .foregroundColor(textPrimary)
+            Image(systemName: "lock.shield.fill")
+                .font(.system(size: 60))
+                .foregroundColor(Color(red: 0.757, green: 0.071, blue: 0.122))
             
-            Text("YOU DIDN'T OPEN THIS APP BY ACCIDENT.")
-                .font(.system(size: 14, weight: .semibold, design: .default))
-                .tracking(1)
-                .foregroundColor(textSecondary)
+            Text("TIME LIMIT REACHED")
+                .font(.system(size: 28, weight: .bold, design: .default))
+                .foregroundColor(textPrimary)
                 .multilineTextAlignment(.center)
         }
     }
@@ -164,100 +174,213 @@ struct BrutalBlockModalView: View {
     // MARK: - Main Statement Section
     
     private var mainStatementSection: some View {
-        VStack(spacing: 16) {
-            Text("THIS IS YOU AVOIDING YOUR LIFE.")
-                .font(.system(size: 24, weight: .heavy, design: .default))
-                .tracking(1)
-                .foregroundColor(textPrimary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
+        VStack(spacing: 12) {
+            if let minutes = minutesSpent, minutes > 0 {
+                Text("You've spent \(minutes) minutes today")
+                    .font(.system(size: 16, weight: .medium, design: .default))
+                    .foregroundColor(textSecondary)
+                    .multilineTextAlignment(.center)
+            } else {
+                Text("Your daily limit has been reached")
+                    .font(.system(size: 16, weight: .medium, design: .default))
+                    .foregroundColor(textSecondary)
+                    .multilineTextAlignment(.center)
+            }
             
-            Text("PUT THE PHONE DOWN. GET BACK TO WORK.")
-                .font(.system(size: 16, weight: .bold, design: .default))
-                .tracking(0.5)
-                .foregroundColor(textSecondary)
-                .multilineTextAlignment(.center)
+            if let appName = appName {
+                Text("on \(appName)")
+                    .font(.system(size: 14, weight: .regular, design: .default))
+                    .foregroundColor(textDeemphasized)
+            }
         }
-        .padding(.vertical, 20)
+        .padding(.vertical, 12)
     }
     
     // MARK: - Reality Check Section
     
     private var realityCheckSection: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 16) {
             Rectangle()
                 .fill(dividerColor)
-                .frame(height: 2)
+                .frame(height: 1)
             
-            if let minutes = minutesSpent, minutes > 0 {
-                Text("YOU'VE BEEN HERE FOR \(minutes) MINUTES.")
-                    .font(.system(size: 14, weight: .bold, design: .monospaced))
-                    .tracking(0.5)
-                    .foregroundColor(textPrimary)
-                
-                Text("THAT'S \(minutes) MINUTES YOU DON'T GET BACK.")
-                    .font(.system(size: 12, weight: .medium, design: .default))
-                    .foregroundColor(textSecondary)
-            } else {
-                Text("YOU SAID YOU'D STOP DOING THIS.")
-                    .font(.system(size: 14, weight: .bold, design: .monospaced))
-                    .tracking(0.5)
-                    .foregroundColor(textPrimary)
-                
-                Text("THIS IS YOU BREAKING THAT PROMISE.")
-                    .font(.system(size: 12, weight: .medium, design: .default))
-                    .foregroundColor(textSecondary)
-            }
+            Text("Take a moment to consider why you set this limit")
+                .font(.system(size: 15, weight: .medium, design: .default))
+                .foregroundColor(textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
             
             Rectangle()
                 .fill(dividerColor)
-                .frame(height: 2)
+                .frame(height: 1)
         }
-        .padding(.vertical, 16)
-    }
-    
-    // MARK: - Quote Section
-    
-    private var quoteSection: some View {
-        Text("\"\(selectedQuote)\"")
-            .font(.system(size: 15, weight: .medium, design: .serif))
-            .italic()
-            .foregroundColor(textSecondary)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 20)
-            .fixedSize(horizontal: false, vertical: true)
     }
     
     // MARK: - Confirmation Section
     
     private var confirmationSection: some View {
-        VStack(spacing: 12) {
-            Text("TYPE TO UNLOCK:")
-                .font(.system(size: 11, weight: .bold, design: .default))
-                .tracking(1.5)
-                .foregroundColor(textDeemphasized)
+        VStack(spacing: 24) {
+            // Phrase confirmation
+            VStack(spacing: 12) {
+                Text("To unlock, type:")
+                    .font(.system(size: 13, weight: .medium, design: .default))
+                    .foregroundColor(textDeemphasized)
+                
+                Text(requiredPhrase)
+                    .font(.system(size: 15, weight: .semibold, design: .default))
+                    .foregroundColor(textPrimary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+                
+                TextField("", text: $confirmationText, axis: .vertical)
+                    .font(.system(size: 15, weight: .medium, design: .default))
+                    .foregroundColor(textPrimary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2...4)
+                    .autocapitalization(.sentences)
+                    .disableAutocorrection(true)
+                    .focused($focusedField, equals: .confirmation)
+                    .padding(.vertical, 14)
+                    .padding(.horizontal, 20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(fieldBackground)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(
+                                        confirmationText.trimmingCharacters(in: .whitespaces).lowercased() == requiredPhrase.lowercased() ? textPrimary : textDeemphasized,
+                                        lineWidth: 2
+                                    )
+                            )
+                    )
+            }
             
-            Text(requiredPhrase)
-                .font(.system(size: 16, weight: .black, design: .monospaced))
-                .tracking(2)
-                .foregroundColor(textPrimary)
-            
-            TextField("", text: $confirmationText)
-                .font(.system(size: 16, weight: .bold, design: .monospaced))
-                .foregroundColor(textPrimary)
-                .multilineTextAlignment(.center)
-                .autocapitalization(.allCharacters)
-                .disableAutocorrection(true)
-                .padding(.vertical, 14)
-                .padding(.horizontal, 20)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(fieldBackground)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(isUnlockEnabled ? textPrimary : textDeemphasized, lineWidth: 2)
-                        )
-                )
+            // Signature canvas
+            VStack(spacing: 12) {
+                HStack(spacing: 8) {
+                    Rectangle()
+                        .fill(dividerColor)
+                        .frame(height: 1)
+                    
+                    Text("AND")
+                        .font(.system(size: 11, weight: .semibold, design: .default))
+                        .foregroundColor(textDeemphasized)
+                    
+                    Rectangle()
+                        .fill(dividerColor)
+                        .frame(height: 1)
+                }
+                .padding(.horizontal, 40)
+                
+                Text("Sign your name with your finger:")
+                    .font(.system(size: 13, weight: .medium, design: .default))
+                    .foregroundColor(textDeemphasized)
+                
+                // Signature pad
+                ZStack(alignment: .topTrailing) {
+                    ZStack {
+                        Canvas { context, size in
+                            // Draw signature baseline
+                            var baselinePath = Path()
+                            let baselineY = size.height - 30
+                            baselinePath.move(to: CGPoint(x: 20, y: baselineY))
+                            baselinePath.addLine(to: CGPoint(x: size.width - 20, y: baselineY))
+                            context.stroke(
+                                baselinePath,
+                                with: .color(textDeemphasized.opacity(0.3)),
+                                style: StrokeStyle(lineWidth: 1, dash: [5, 5])
+                            )
+                            
+                            // Draw signature strokes
+                            for line in signatureLines {
+                                var path = Path()
+                                guard let firstPoint = line.first else { continue }
+                                path.move(to: firstPoint)
+                                for point in line.dropFirst() {
+                                    path.addLine(to: point)
+                                }
+                                context.stroke(
+                                    path,
+                                    with: .color(textPrimary),
+                                    style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
+                                )
+                            }
+                            
+                            // Draw current line being drawn
+                            if !currentLine.isEmpty {
+                                var path = Path()
+                                path.move(to: currentLine[0])
+                                for point in currentLine.dropFirst() {
+                                    path.addLine(to: point)
+                                }
+                                context.stroke(
+                                    path,
+                                    with: .color(textPrimary),
+                                    style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
+                                )
+                            }
+                        }
+                        .frame(height: 120)
+                        
+                        // Placeholder text
+                        if signatureLines.isEmpty && currentLine.isEmpty {
+                            VStack {
+                                Spacer()
+                                Text("Sign here")
+                                    .font(.system(size: 14, weight: .regular, design: .default))
+                                    .italic()
+                                    .foregroundColor(textDeemphasized.opacity(0.5))
+                                    .offset(y: -35)
+                                Spacer()
+                            }
+                        }
+                    }
+                    .background(fieldBackground)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(!signatureLines.isEmpty ? textPrimary : textDeemphasized, lineWidth: 2)
+                    )
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                // Light haptic on first touch of new stroke
+                                if currentLine.isEmpty {
+                                    let generator = UIImpactFeedbackGenerator(style: .light)
+                                    generator.impactOccurred()
+                                }
+                                currentLine.append(value.location)
+                            }
+                            .onEnded { _ in
+                                if !currentLine.isEmpty {
+                                    signatureLines.append(currentLine)
+                                    currentLine = []
+                                }
+                            }
+                    )
+                    
+                    // Clear button
+                    if !signatureLines.isEmpty {
+                        Button {
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                signatureLines = []
+                                currentLine = []
+                            }
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(textDeemphasized)
+                                .padding(8)
+                        }
+                    }
+                }
+                
+                Text("By signing, you acknowledge this is an intentional choice")
+                    .font(.system(size: 11, weight: .regular, design: .default))
+                    .foregroundColor(textDeemphasized)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 30)
+            }
         }
     }
     
@@ -265,58 +388,44 @@ struct BrutalBlockModalView: View {
     
     private var actionsSection: some View {
         VStack(spacing: 16) {
-            // STAY BLOCKED (Primary "good" action - SAFETY YELLOW)
+            // STAY BLOCKED (Primary action)
             Button {
-                // No haptic on stay blocked
                 logUnlockEvent(didProceed: false)
                 onStayBlocked()
             } label: {
-                VStack(spacing: 6) {
-                    Text("STAY BLOCKED — DO THE HARD THING")
-                        .font(.system(size: 14, weight: .black, design: .default))
-                        .tracking(0.5)
-                        .foregroundColor(primaryButtonText)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 18)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(primaryButtonBackground)
-                )
+                Text("Stay Blocked")
+                    .font(.system(size: 16, weight: .bold, design: .default))
+                    .foregroundColor(primaryButtonText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(primaryButtonBackground)
+                    )
             }
             
-            Text("Good. Do the hard thing.")
-                .font(.system(size: 11, weight: .medium, design: .default))
-                .foregroundColor(textDeemphasized)
-            
-            // UNLOCK ANYWAY (Danger action - HAZARD RED)
+            // UNLOCK (Requires typing phrase)
             Button {
-                // Sharp haptic on unlock
-                let generator = UIImpactFeedbackGenerator(style: .rigid)
+                let generator = UIImpactFeedbackGenerator(style: .medium)
                 generator.impactOccurred()
                 
-                // Log the event
                 logUnlockEvent(didProceed: true)
-                
                 onUnlock()
             } label: {
-                VStack(spacing: 6) {
-                    Text("UNLOCK ANYWAY")
-                        .font(.system(size: 14, weight: .black, design: .default))
-                        .tracking(0.5)
-                        .foregroundColor(isUnlockEnabled ? dangerButtonText : textDeemphasized)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 18)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(isUnlockEnabled ? hazardRed : disabledButtonBackground)
-                )
+                Text("Unlock")
+                    .font(.system(size: 16, weight: .bold, design: .default))
+                    .foregroundColor(isUnlockEnabled ? dangerButtonText : textDeemphasized)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(isUnlockEnabled ? hazardRed : disabledButtonBackground)
+                    )
             }
             .disabled(!isUnlockEnabled)
             
-            Text("This will be logged. You will see it later.")
-                .font(.system(size: 11, weight: .medium, design: .default))
+            Text("All unlock events are logged")
+                .font(.system(size: 12, weight: .regular, design: .default))
                 .foregroundColor(textDeemphasized)
         }
     }
@@ -324,18 +433,27 @@ struct BrutalBlockModalView: View {
     // MARK: - Logging
     
     private func logUnlockEvent(didProceed: Bool) {
+        let reflection: String? = {
+            if didProceed {
+                let strokeCount = signatureLines.count
+                let pointCount = signatureLines.flatMap { $0 }.count
+                return "Typed: '\(confirmationText)' | Handwritten signature provided (\(strokeCount) strokes, \(pointCount) points)"
+            }
+            return nil
+        }()
+        
         let event = PauseEvent(
             appIdentifier: nil,
             appName: appName,
             attemptCount: nil,
-            promptId: "brutal_block",
+            promptId: "intentional_block",
             promptCategory: "discipline",
-            promptType: "brutal",
-            promptQuestion: "STOP SCROLLING. THIS IS YOU AVOIDING YOUR LIFE.",
+            promptType: "intentional",
+            promptQuestion: "Time limit reached. Consider why you set this limit.",
             selectedAnswer: didProceed ? "UNLOCKED" : "STAYED_BLOCKED",
-            freeformReflection: didProceed ? "User typed confirmation: \(confirmationText)" : nil,
+            freeformReflection: reflection,
             didProceed: didProceed,
-            unlockMethod: didProceed ? "brutal_confirmation" : "none",
+            unlockMethod: didProceed ? "handwritten_signature" : "none",
             unlockDurationMs: nil,
             stageExitedAt: Date(),
             sessionDurationMs: Int(Date().timeIntervalSince(sessionStartTime) * 1000)
@@ -344,7 +462,11 @@ struct BrutalBlockModalView: View {
         let store = PauseEventStore(modelContext: modelContext)
         store.save(event)
         
-        print("🔴 BrutalBlock logged: \(didProceed ? "UNLOCKED" : "STAYED_BLOCKED")")
+        if didProceed {
+            print("📊 Unlock logged - Handwritten signature provided (\(signatureLines.count) strokes)")
+        } else {
+            print("📊 Stayed blocked")
+        }
     }
 }
 
