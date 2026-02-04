@@ -23,6 +23,7 @@ struct ContentView: View {
     @State private var isMonitoring: Bool = false
     @State private var showPauseModal: Bool = false
     @State private var showEventLog: Bool = false
+    @State private var showAnalytics: Bool = false
     @State private var isBlocked: Bool = false
     @State private var attemptCount: Int = 0
     
@@ -215,13 +216,40 @@ struct ContentView: View {
                 VStack(spacing: 24) {
                     // Header
                     VStack(spacing: 8) {
-                        Text("⚡ ATOMIC")
-                            .font(.system(size: 40, weight: .black, design: .rounded))
-                            .foregroundColor(primaryTextColor)
+                        HStack {
+                            Spacer()
+                            
+                            VStack(spacing: 8) {
+                                Text("⚡ ATOMIC")
+                                    .font(.system(size: 40, weight: .black, design: .rounded))
+                                    .foregroundColor(primaryTextColor)
+                                
+                                Text("App time limits that actually work")
+                                    .font(.subheadline)
+                                    .foregroundColor(secondaryTextColor)
+                            }
+                            
+                            Spacer()
+                        }
                         
-                        Text("App time limits that actually work")
-                            .font(.subheadline)
-                            .foregroundColor(secondaryTextColor)
+                        // Analytics Button - Prominent placement
+                        Button {
+                            showAnalytics = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "chart.bar.fill")
+                                    .font(.headline)
+                                Text("View Analytics")
+                                    .font(.system(size: 16, weight: .semibold))
+                            }
+                            .foregroundColor(colorScheme == .dark ? .black : .white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(colorScheme == .dark ? accentColor : Color.black)
+                            .cornerRadius(12)
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 12)
                     }
                     .padding(.top, 20)
                     
@@ -520,6 +548,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showEventLog) {
             PauseEventLogView()
+        }
+        .fullScreenCover(isPresented: $showAnalytics) {
+            AnalyticsDashboardView()
         }
         .task {
             await requestAuthorization()
