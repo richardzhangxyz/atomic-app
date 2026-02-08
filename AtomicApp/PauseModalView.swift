@@ -61,6 +61,8 @@ struct PauseModalView: View {
     private let holdDuration: Double = 2.5
     private let savedSignaturePhrase: String? = UserDefaults.standard.string(forKey: "userSignaturePhrase")
     
+    @Environment(\.colorScheme) private var colorScheme
+    
     init(appName: String? = nil, attemptCount: Int? = nil, onProceed: @escaping () -> Void, onClose: @escaping () -> Void) {
         self.appName = appName
         self.attemptCount = attemptCount
@@ -68,31 +70,17 @@ struct PauseModalView: View {
         self.onClose = onClose
     }
     
-    @Environment(\.colorScheme) private var colorScheme
-    
     var body: some View {
         ZStack {
-            // Calming gradient background - adapts to dark mode
-            LinearGradient(
-                colors: colorScheme == .dark ? [
-                    Color(red: 0.15, green: 0.14, blue: 0.20),  // Dark lavender
-                    Color(red: 0.12, green: 0.15, blue: 0.20),  // Dark blue
-                    Color(red: 0.16, green: 0.14, blue: 0.13)   // Dark warm
-                ] : [
-                    Color(red: 0.95, green: 0.94, blue: 0.98),  // Soft lavender
-                    Color(red: 0.93, green: 0.95, blue: 0.98),  // Soft blue
-                    Color(red: 0.96, green: 0.94, blue: 0.92)   // Warm beige
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // Background
+            AppTheme.Colors.background(for: colorScheme)
+                .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 Spacer()
                 
-                // Main content - fullscreen
-                VStack(spacing: 32) {
+                // Main content
+                VStack(spacing: AppTheme.Spacing.xxxl) {
                     contextHeader
                     
                     switch stage {
@@ -106,7 +94,7 @@ struct PauseModalView: View {
                     
                     Spacer()
                 }
-                .padding(32)
+                .padding(AppTheme.Spacing.xxxl)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
                 Spacer()
@@ -114,12 +102,11 @@ struct PauseModalView: View {
             .opacity(showView ? 1 : 0)
         }
         .onAppear {
-            // Select prompt once per presentation
             if selectedPrompt == nil {
                 selectedPrompt = PausePromptLibrary.randomPrompt()
             }
             
-            withAnimation(.easeOut(duration: 0.4)) {
+            withAnimation(AppTheme.Animation.slow) {
                 showView = true
             }
         }
@@ -128,33 +115,21 @@ struct PauseModalView: View {
     // MARK: - Context Header
     
     private var contextHeader: some View {
-        VStack(spacing: 16) {
-            Text("Quick pause.")
-                .font(.system(size: 36, weight: .semibold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: colorScheme == .dark ? [
-                            Color(red: 0.7, green: 0.6, blue: 0.9),
-                            Color(red: 0.6, green: 0.75, blue: 0.95)
-                        ] : [
-                            Color(red: 0.4, green: 0.3, blue: 0.6),
-                            Color(red: 0.3, green: 0.5, blue: 0.7)
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+        VStack(spacing: AppTheme.Spacing.lg) {
+            Text("Quick pause")
+                .font(AppTheme.Typography.title(weight: .semibold))
+                .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
             
             if let appName = appName, let count = attemptCount, count > 1 {
-                Text("You've opened \(appName) \(count) times recently.")
-                    .font(.body)
-                    .foregroundColor(.secondary)
+                Text("You've opened \(appName) \(count) times recently")
+                    .font(AppTheme.Typography.body())
+                    .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
             }
             
             // Emoji mood indicators - only show in prompt stage
             if stage == .prompt {
-                VStack(spacing: 12) {
-                    HStack(spacing: 8) {
+                VStack(spacing: AppTheme.Spacing.md) {
+                    HStack(spacing: AppTheme.Spacing.sm) {
                         ForEach(EmojiMood.allCases, id: \.self) { mood in
                             emojiButton(mood)
                         }
@@ -162,19 +137,19 @@ struct PauseModalView: View {
                     
                     if let selected = selectedEmoji {
                         Text(selected.description)
-                            .font(.body)
-                            .foregroundColor(.secondary)
+                            .font(AppTheme.Typography.body())
+                            .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                             .transition(.opacity)
                     }
                 }
-                .padding(.top, 8)
+                .padding(.top, AppTheme.Spacing.sm)
             }
         }
     }
     
     private func emojiButton(_ mood: EmojiMood) -> some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(AppTheme.Animation.quick) {
                 selectedEmoji = mood
             }
         } label: {
@@ -182,50 +157,41 @@ struct PauseModalView: View {
                 Text(mood.rawValue)
                     .font(.title)
                     .scaleEffect(selectedEmoji == mood ? 1.15 : 1.0)
-                    .shadow(
-                        color: selectedEmoji == mood ? Color(red: 0.5, green: 0.4, blue: 0.7).opacity(0.6) : .clear,
-                        radius: 12
-                    )
             }
-            .padding(8)
+            .padding(AppTheme.Spacing.sm)
             .background(
                 Circle()
-                    .fill(selectedEmoji == mood ? (colorScheme == .dark ? Color(red: 0.6, green: 0.5, blue: 0.8).opacity(0.3) : Color(red: 0.6, green: 0.5, blue: 0.8).opacity(0.15)) : Color.clear)
+                    .fill(selectedEmoji == mood ? AppTheme.Colors.accent.opacity(0.15) : Color.clear)
             )
         }
-        .animation(.spring(response: 0.3), value: selectedEmoji)
+        .animation(AppTheme.Animation.spring, value: selectedEmoji)
     }
     
     // MARK: - Prompt Section
     
     private var promptSection: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: AppTheme.Spacing.xl) {
             if let prompt = selectedPrompt {
                 Text(prompt.question)
-                    .font(.title3)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
+                    .font(AppTheme.Typography.headline(weight: .medium))
+                    .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                 
-                VStack(spacing: 12) {
+                VStack(spacing: AppTheme.Spacing.md) {
                     ForEach(prompt.options, id: \.self) { option in
                         Button {
                             selectedAnswer = option
-                            withAnimation(.easeInOut(duration: 0.3)) {
+                            withAnimation(AppTheme.Animation.standard) {
                                 stage = .microReflection
                             }
                         } label: {
                             Text(option)
-                                .font(.body)
-                                .foregroundColor(.primary)
+                                .font(AppTheme.Typography.body())
+                                .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(colorScheme == .dark ? Color(white: 0.2).opacity(0.7) : Color.white.opacity(0.7))
-                                        .shadow(color: Color(red: 0.5, green: 0.4, blue: 0.7).opacity(0.1), radius: 4, y: 2)
-                                )
+                                .padding(.vertical, AppTheme.Spacing.lg)
+                                .themeCard(colorScheme: colorScheme)
                         }
                     }
                 }
@@ -236,80 +202,56 @@ struct PauseModalView: View {
     // MARK: - Micro Reflection
     
     private var microReflectionSection: some View {
-        VStack(spacing: 24) {
-            VStack(spacing: 8) {
+        VStack(spacing: AppTheme.Spacing.xxl) {
+            VStack(spacing: AppTheme.Spacing.sm) {
                 Text("Do you still want to open this?")
-                    .font(.title3)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
+                    .font(AppTheme.Typography.headline(weight: .medium))
+                    .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                 
                 Text("Intentional or automatic?")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(AppTheme.Typography.body())
+                    .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
             }
             .multilineTextAlignment(.center)
             
-            // Freeform text field - cleaner design
-            VStack(alignment: .leading, spacing: 10) {
+            // Freeform text field
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
                 Text("What's on your mind right now?")
-                    .font(.body)
-                    .foregroundColor(.primary)
+                    .font(AppTheme.Typography.body())
+                    .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                 
                 ZStack(alignment: .topLeading) {
                     if freeformText.isEmpty {
                         Text("Type your thoughts here...")
-                            .foregroundColor(.secondary.opacity(0.5))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
+                            .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
+                            .padding(.horizontal, AppTheme.Spacing.md)
+                            .padding(.vertical, AppTheme.Spacing.md)
                     }
                     
                     TextEditor(text: $freeformText)
                         .frame(minHeight: 100)
                         .scrollContentBackground(.hidden)
-                        .foregroundColor(.primary)
-                        .padding(8)
-                        .background(colorScheme == .dark ? Color(white: 0.2).opacity(0.7) : Color.white.opacity(0.7))
-                        .cornerRadius(12)
+                        .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
+                        .padding(AppTheme.Spacing.sm)
+                        .background(AppTheme.Colors.surface(for: colorScheme))
+                        .cornerRadius(AppTheme.CornerRadius.md)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color(red: 0.5, green: 0.4, blue: 0.7).opacity(0.2), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                                .stroke(AppTheme.Colors.border(for: colorScheme), lineWidth: 1)
                         )
                 }
             }
             
-            VStack(spacing: 12) {
+            VStack(spacing: AppTheme.Spacing.md) {
                 Button {
-                    withAnimation(.easeInOut(duration: 0.3)) {
+                    withAnimation(AppTheme.Animation.standard) {
                         unlockStartTime = Date()
                         stage = .unlock
                     }
                 } label: {
                     Text("Proceed intentionally")
-                        .font(.body)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(
-                            Group {
-                                if freeformText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.gray.opacity(0.5))
-                                } else {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(
-                                            LinearGradient(
-                                                colors: [
-                                                    Color(red: 0.5, green: 0.4, blue: 0.7),
-                                                    Color(red: 0.4, green: 0.5, blue: 0.75)
-                                                ],
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                        )
-                                }
-                            }
-                        )
+                        .font(AppTheme.Typography.body(weight: .medium))
+                        .themePrimaryButton(isEnabled: !freeformText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, colorScheme: colorScheme)
                 }
                 .disabled(freeformText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 
@@ -318,14 +260,8 @@ struct PauseModalView: View {
                     onClose()
                 } label: {
                     Text("Close app")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(colorScheme == .dark ? Color(white: 0.2).opacity(0.5) : Color.white.opacity(0.5))
-                        )
+                        .font(AppTheme.Typography.body())
+                        .themeSecondaryButton(colorScheme: colorScheme)
                 }
             }
         }
@@ -334,7 +270,7 @@ struct PauseModalView: View {
     // MARK: - Unlock Section
     
     private var unlockSection: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: AppTheme.Spacing.xl) {
             if let savedPhrase = savedSignaturePhrase, !savedPhrase.isEmpty {
                 phraseUnlock
             } else {
@@ -344,13 +280,21 @@ struct PauseModalView: View {
     }
     
     private var phraseUnlock: some View {
-        VStack(spacing: 16) {
-            Text("Type your phrase to proceed.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+        VStack(spacing: AppTheme.Spacing.lg) {
+            Text("Type your phrase to proceed")
+                .font(AppTheme.Typography.body())
+                .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
             
             TextField("Your signature phrase", text: $signaturePhrase)
-                .textFieldStyle(.roundedBorder)
+                .font(AppTheme.Typography.body())
+                .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
+                .padding(AppTheme.Spacing.lg)
+                .background(AppTheme.Colors.surface(for: colorScheme))
+                .cornerRadius(AppTheme.CornerRadius.md)
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                        .stroke(AppTheme.Colors.border(for: colorScheme), lineWidth: 1)
+                )
                 .autocapitalization(.none)
                 .disableAutocorrection(true)
             
@@ -363,78 +307,44 @@ struct PauseModalView: View {
                 }
             } label: {
                 Text("Submit")
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(
-                        Group {
-                            if signaturePhrase.isEmpty {
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color.gray.opacity(0.5))
-                            } else {
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [
-                                                Color(red: 0.5, green: 0.4, blue: 0.7),
-                                                Color(red: 0.4, green: 0.5, blue: 0.75)
-                                            ],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                            }
-                        }
-                    )
+                    .font(AppTheme.Typography.body(weight: .medium))
+                    .themePrimaryButton(isEnabled: !signaturePhrase.isEmpty, colorScheme: colorScheme)
             }
             .disabled(signaturePhrase.isEmpty)
         }
     }
     
     private var holdToConfirmUnlock: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: AppTheme.Spacing.lg) {
             Text("Hold to proceed")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(AppTheme.Typography.body())
+                .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
             
             ZStack {
                 Circle()
-                    .stroke(Color.secondary.opacity(0.2), lineWidth: 8)
+                    .stroke(AppTheme.Colors.surface(for: colorScheme), lineWidth: 6)
                 
                 Circle()
                     .trim(from: 0, to: holdProgress)
                     .stroke(
-                        LinearGradient(
-                            colors: colorScheme == .dark ? [
-                                Color(red: 0.7, green: 0.6, blue: 0.9),
-                                Color(red: 0.6, green: 0.75, blue: 0.95)
-                            ] : [
-                                Color(red: 0.5, green: 0.4, blue: 0.7),
-                                Color(red: 0.4, green: 0.5, blue: 0.75)
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ),
-                        style: StrokeStyle(lineWidth: 8, lineCap: .round)
+                        AppTheme.Colors.accent,
+                        style: StrokeStyle(lineWidth: 6, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
-                    .animation(.spring(response: 0.5, dampingFraction: 0.7), value: holdProgress)
+                    .animation(AppTheme.Animation.spring, value: holdProgress)
                 
-                Text("I'm choosing this\non purpose.")
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
+                Text("I'm choosing this\non purpose")
+                    .font(AppTheme.Typography.body(weight: .medium))
+                    .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30)
                     .scaleEffect(isHolding ? 1.05 : 1.0)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHolding)
+                    .animation(AppTheme.Animation.spring, value: isHolding)
             }
             .frame(width: 200, height: 200)
             .contentShape(Circle())
             .scaleEffect(isHolding ? 1.05 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHolding)
+            .animation(AppTheme.Animation.spring, value: isHolding)
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { _ in

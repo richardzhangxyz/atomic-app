@@ -17,22 +17,23 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     
     /// Title + subtitle pairs - firm but kind
     private let messageOptions: [(title: String, subtitle: String)] = [
-        // James Clear inspired
-        ("✋ PAUSE.", "Every moment is a vote for who you want to become."),
-        ("🗳️ CHOOSE.", "Small choices compound. This one matters."),
-        ("📐 SYSTEMS.", "You don't rise to your goals. You fall to your systems."),
-        ("🔄 HABITS.", "Your habits shape your identity. Your identity shapes your habits."),
+        // Time limit messages with instruction
+        ("⏱️ TIME LIMIT REACHED", "Tap below to open Atomic and unlock with intention."),
+        ("✋ PAUSE.", "Your time is up. Open Atomic to proceed mindfully."),
+        ("🗳️ CHOOSE.", "Small choices compound. Open Atomic to continue."),
+        ("📐 SYSTEMS.", "Time's up. Open Atomic to unlock intentionally."),
+        ("🔄 HABITS.", "Limit reached. Open Atomic to reflect and unlock."),
         ("🌅 FUTURE.", "Be the person your future self will thank."),
         
         // Mark Manson inspired
         ("💪 STRUGGLE.", "What you choose to struggle for defines who you are."),
-        ("🚪 BOUNDARIES.", "The quality of your life depends on what you say no to."),
-        ("🎯 VALUES.", "You can't have a better life without saying no to something."),
+        ("🚪 BOUNDARIES.", "Time's up. Open Atomic to proceed with intention."),
+        ("🎯 VALUES.", "Limit reached. Open Atomic to make a conscious choice."),
         
         // Jonathan Haidt inspired
         ("🌱 GROW.", "Your best self is built through resistance, not comfort."),
         ("⚡ FRICTION.", "Growth requires friction. This moment is the work."),
-        ("🏔️ CHALLENGE.", "The struggle itself is what builds strength."),
+        ("🏔️ CHALLENGE.", "Time limit reached. Open Atomic to continue."),
         
         // Phil Knight inspired
         ("🚀 FORWARD.", "The only way forward is through."),
@@ -142,16 +143,16 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
                 color: secondaryTextColor
             ),
             
-            // Primary button: Continue anyway (acknowledges choice without shaming)
+            // Primary button: Open the main app to unlock
             primaryButtonLabel: ShieldConfiguration.Label(
-                text: "CONTINUE ANYWAY",
+                text: "OPEN ATOMIC TO UNLOCK",
                 color: UIColor.white
             ),
             primaryButtonBackgroundColor: hazardRed,
             
             // Secondary button: Encouraging, positive framing
             secondaryButtonLabel: ShieldConfiguration.Label(
-                text: "RETURN TO LIFE ✨",
+                text: "STAY BLOCKED ✨",
                 color: secondaryButtonTextColor
             )
         )

@@ -11,8 +11,8 @@ import Charts
 
 struct AnalyticsDashboardView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) var colorScheme
     
     // Real-time data query - automatically updates when new events are added
     @Query(sort: \PauseEvent.createdAt, order: .reverse) private var allEvents: [PauseEvent]
@@ -42,38 +42,6 @@ struct AnalyticsDashboardView: View {
         }
     }
     
-    // MARK: - Adaptive Color System
-    
-    private var backgroundColor: Color {
-        colorScheme == .dark
-            ? Color(red: 0.1, green: 0.1, blue: 0.1)
-            : Color(red: 1.0, green: 0.85, blue: 0.0)
-    }
-    
-    private var primaryTextColor: Color {
-        colorScheme == .dark
-            ? Color(red: 1.0, green: 0.929, blue: 0.161)
-            : Color.black
-    }
-    
-    private var secondaryTextColor: Color {
-        colorScheme == .dark
-            ? Color(red: 0.9, green: 0.836, blue: 0.145)
-            : Color(red: 0.15, green: 0.15, blue: 0.15)
-    }
-    
-    private var cardBackgroundColor: Color {
-        colorScheme == .dark
-            ? Color(red: 1.0, green: 0.929, blue: 0.161).opacity(0.15)
-            : Color.white.opacity(0.35)
-    }
-    
-    private var accentColor: Color {
-        colorScheme == .dark
-            ? Color(red: 1.0, green: 0.929, blue: 0.161)
-            : Color.black
-    }
-    
     // MARK: - Computed Properties
     
     private var filteredEvents: [PauseEvent] {
@@ -100,48 +68,38 @@ struct AnalyticsDashboardView: View {
     
     var body: some View {
         ZStack {
-            backgroundColor
+            AppTheme.Colors.background(for: colorScheme)
                 .ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: AppTheme.Spacing.sectionSpacing) {
                     // Header
-                    VStack(spacing: 8) {
+                    VStack(spacing: AppTheme.Spacing.md) {
                         HStack {
                             Button {
                                 dismiss()
                             } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.title2)
-                                    .foregroundColor(secondaryTextColor)
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
+                                    .imageScale(.medium)
                             }
                             
                             Spacer()
                             
                             VStack(spacing: 4) {
-                                HStack(spacing: 6) {
-                                    Text("📊 ANALYTICS")
-                                        .font(.system(size: 28, weight: .black, design: .rounded))
-                                        .foregroundColor(primaryTextColor)
-                                    
-                                    // Live indicator
-                                    HStack(spacing: 4) {
-                                        Circle()
-                                            .fill(.green)
-                                            .frame(width: 6, height: 6)
-                                        Text("LIVE")
-                                            .font(.system(size: 9, weight: .bold))
-                                            .foregroundColor(.green)
-                                    }
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 3)
-                                    .background(Color.green.opacity(0.15))
-                                    .cornerRadius(6)
-                                }
+                                Text("Analytics")
+                                    .font(AppTheme.Typography.title(weight: .semibold))
+                                    .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                                 
-                                Text("Updates automatically with new data")
-                                    .font(.caption)
-                                    .foregroundColor(secondaryTextColor)
+                                HStack(spacing: 4) {
+                                    Circle()
+                                        .fill(AppTheme.Colors.accent)
+                                        .frame(width: 6, height: 6)
+                                    Text("Live")
+                                        .font(AppTheme.Typography.label(weight: .medium))
+                                        .foregroundColor(AppTheme.Colors.accent)
+                                }
                             }
                             
                             Spacer()
@@ -150,211 +108,173 @@ struct AnalyticsDashboardView: View {
                             Color.clear
                                 .frame(width: 44, height: 44)
                         }
-                        .padding(.horizontal)
-                        .padding(.top, 20)
+                        .padding(.horizontal, AppTheme.Spacing.xl)
+                        .padding(.top, AppTheme.Spacing.xl)
                     }
                     
                     // Time Range Selector
-                    HStack(spacing: 12) {
+                    HStack(spacing: AppTheme.Spacing.sm) {
                         ForEach(TimeRange.allCases, id: \.self) { range in
                             Button {
-                                withAnimation(.easeInOut(duration: 0.2)) {
+                                withAnimation(AppTheme.Animation.quick) {
                                     selectedTimeRange = range
                                 }
                             } label: {
                                 Text(range.rawValue)
-                                    .font(.system(size: 14, weight: .bold))
-                                    .foregroundColor(selectedTimeRange == range ? (colorScheme == .dark ? .black : .white) : primaryTextColor)
+                                    .font(AppTheme.Typography.caption(weight: .semibold))
+                                    .foregroundColor(
+                                        selectedTimeRange == range 
+                                            ? AppTheme.Colors.background 
+                                            : AppTheme.Colors.textSecondary
+                                    )
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 10)
                                     .background(
-                                        selectedTimeRange == range
-                                            ? (colorScheme == .dark ? accentColor : Color.black)
-                                            : cardBackgroundColor
+                                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.sm)
+                                            .fill(
+                                                selectedTimeRange == range
+                                                    ? AppTheme.Colors.accent
+                                                    : AppTheme.Colors.surface
+                                            )
                                     )
-                                    .cornerRadius(10)
                             }
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, AppTheme.Spacing.xl)
                     
                     // Key Metrics Cards
-                    VStack(spacing: 16) {
-                        HStack(spacing: 16) {
+                    VStack(spacing: AppTheme.Spacing.cardSpacing) {
+                        HStack(spacing: AppTheme.Spacing.cardSpacing) {
                             MetricCard(
-                                icon: "shield.checkered",
+                                icon: "shield",
                                 value: "\(totalEvents)",
                                 label: "Total Blocks",
-                                color: accentColor,
-                                primaryTextColor: primaryTextColor,
-                                secondaryTextColor: secondaryTextColor,
-                                cardBackgroundColor: cardBackgroundColor
+                                color: AppTheme.Colors.accent
                             )
                             
                             MetricCard(
-                                icon: "flame.fill",
+                                icon: "flame",
                                 value: "\(currentStreak)",
                                 label: "Day Streak",
-                                color: .orange,
-                                primaryTextColor: primaryTextColor,
-                                secondaryTextColor: secondaryTextColor,
-                                cardBackgroundColor: cardBackgroundColor
+                                color: AppTheme.Colors.warning
                             )
                         }
                         
-                        HStack(spacing: 16) {
+                        HStack(spacing: AppTheme.Spacing.cardSpacing) {
                             MetricCard(
-                                icon: "checkmark.shield.fill",
+                                icon: "checkmark.shield",
                                 value: "\(Int((1 - proceedRate) * 100))%",
                                 label: "Stayed Blocked",
-                                color: .green,
-                                primaryTextColor: primaryTextColor,
-                                secondaryTextColor: secondaryTextColor,
-                                cardBackgroundColor: cardBackgroundColor
+                                color: AppTheme.Colors.success
                             )
                             
                             MetricCard(
-                                icon: "lock.open.fill",
+                                icon: "lock.open",
                                 value: "\(Int(proceedRate * 100))%",
                                 label: "Unlocked",
-                                color: Color(red: 0.757, green: 0.071, blue: 0.122),
-                                primaryTextColor: primaryTextColor,
-                                secondaryTextColor: secondaryTextColor,
-                                cardBackgroundColor: cardBackgroundColor
+                                color: AppTheme.Colors.destructive
                             )
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, AppTheme.Spacing.xl)
                     .transition(.opacity.combined(with: .scale))
-                    .id(selectedTimeRange) // Force view refresh on time range change
+                    .id(selectedTimeRange)
                     
-                    // Proceed Rate Trend Chart
+                    // Charts
                     if !filteredEvents.isEmpty {
                         ChartCard(
                             title: "Proceed Rate Trend",
-                            subtitle: "Daily unlock percentage",
-                            primaryTextColor: primaryTextColor,
-                            secondaryTextColor: secondaryTextColor,
-                            cardBackgroundColor: cardBackgroundColor
+                            subtitle: "Daily unlock percentage"
                         ) {
                             ProceedRateTrendChart(
-                                events: filteredEvents,
-                                accentColor: accentColor,
-                                secondaryTextColor: secondaryTextColor
+                                events: filteredEvents
                             )
                         }
                         
-                        // Time of Day Heatmap
                         ChartCard(
                             title: "Time of Day Pattern",
-                            subtitle: "When you're most tempted",
-                            primaryTextColor: primaryTextColor,
-                            secondaryTextColor: secondaryTextColor,
-                            cardBackgroundColor: cardBackgroundColor
+                            subtitle: "When you're most tempted"
                         ) {
                             TimeOfDayHeatmap(
-                                events: filteredEvents,
-                                accentColor: accentColor,
-                                secondaryTextColor: secondaryTextColor
+                                events: filteredEvents
                             )
                         }
                         
-                        // Top Blocked Apps
                         ChartCard(
                             title: "Top Blocked Apps",
-                            subtitle: "Most frequent blocks",
-                            primaryTextColor: primaryTextColor,
-                            secondaryTextColor: secondaryTextColor,
-                            cardBackgroundColor: cardBackgroundColor
+                            subtitle: "Most frequent blocks"
                         ) {
                             TopAppsChart(
-                                events: filteredEvents,
-                                accentColor: accentColor,
-                                primaryTextColor: primaryTextColor,
-                                secondaryTextColor: secondaryTextColor
+                                events: filteredEvents
                             )
                         }
                         
-                        // Response Patterns
                         ChartCard(
                             title: "Your Response Patterns",
-                            subtitle: "Most common answers",
-                            primaryTextColor: primaryTextColor,
-                            secondaryTextColor: secondaryTextColor,
-                            cardBackgroundColor: cardBackgroundColor
+                            subtitle: "Most common answers"
                         ) {
                             ResponsePatternsView(
-                                events: filteredEvents,
-                                primaryTextColor: primaryTextColor,
-                                secondaryTextColor: secondaryTextColor
+                                events: filteredEvents
                             )
                         }
                     } else {
                         // Empty State
-                        VStack(spacing: 16) {
-                            Image(systemName: "chart.bar.xaxis")
-                                .font(.system(size: 60))
-                                .foregroundColor(secondaryTextColor.opacity(0.5))
+                        VStack(spacing: AppTheme.Spacing.lg) {
+                            Image(systemName: "chart.xyaxis.line")
+                                .font(.system(size: 48))
+                                .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
+                                .imageScale(.large)
                             
                             Text("No Data Yet")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(primaryTextColor)
+                                .font(AppTheme.Typography.title(weight: .semibold))
+                                .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                             
                             Text("Analytics will appear after your first block")
-                                .font(.subheadline)
-                                .foregroundColor(secondaryTextColor)
+                                .font(AppTheme.Typography.body())
+                                .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                                 .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 60)
-                        .background(cardBackgroundColor)
-                        .cornerRadius(16)
-                        .padding(.horizontal                        )
+                        .themeCard(colorScheme: colorScheme)
+                        .padding(.horizontal, AppTheme.Spacing.xl)
                         
                         // Insights Section
                         ChartCard(
-                            title: "💡 Insights & Tips",
-                            subtitle: "Based on your patterns",
-                            primaryTextColor: primaryTextColor,
-                            secondaryTextColor: secondaryTextColor,
-                            cardBackgroundColor: cardBackgroundColor
+                            title: "Insights & Tips",
+                            subtitle: "Based on your patterns"
                         ) {
                             InsightsView(
                                 events: filteredEvents,
                                 streak: currentStreak,
-                                proceedRate: proceedRate,
-                                primaryTextColor: primaryTextColor,
-                                secondaryTextColor: secondaryTextColor,
-                                accentColor: accentColor
+                                proceedRate: proceedRate
                             )
                         }
                     }
                     
                     // Data Info Footer
                     if !filteredEvents.isEmpty {
-                        VStack(spacing: 8) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "chart.bar.doc.horizontal")
-                                    .font(.caption)
-                                    .foregroundColor(secondaryTextColor.opacity(0.7))
-                                
-                                Text("\(filteredEvents.count) events in \(selectedTimeRange.label.lowercased())")
-                                    .font(.caption)
-                                    .foregroundColor(secondaryTextColor.opacity(0.7))
-                                
-                                Spacer()
-                                
-                                Text("Last updated: now")
-                                    .font(.caption)
-                                    .foregroundColor(secondaryTextColor.opacity(0.7))
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .background(cardBackgroundColor.opacity(0.5))
-                            .cornerRadius(12)
+                        HStack(spacing: AppTheme.Spacing.md) {
+                            Image(systemName: "chart.bar.doc.horizontal")
+                                .font(AppTheme.Typography.caption())
+                                .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
+                            
+                            Text("\(filteredEvents.count) events in \(selectedTimeRange.label.lowercased())")
+                                .font(AppTheme.Typography.caption())
+                                .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
+                            
+                            Spacer()
+                            
+                            Text("Updated now")
+                                .font(AppTheme.Typography.caption())
+                                .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
                         }
-                        .padding(.horizontal)
+                        .padding(AppTheme.Spacing.lg)
+                        .background(
+                            RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                                .fill(AppTheme.Colors.surface(for: colorScheme).opacity(0.5))
+                        )
+                        .padding(.horizontal, AppTheme.Spacing.xl)
                     }
                 }
                 .padding(.bottom, 40)
@@ -408,31 +328,28 @@ struct MetricCard: View {
     let value: String
     let label: String
     let color: Color
-    let primaryTextColor: Color
-    let secondaryTextColor: Color
-    let cardBackgroundColor: Color
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: AppTheme.Spacing.md) {
             Image(systemName: icon)
-                .font(.system(size: 28))
+                .font(.system(size: 24))
                 .foregroundColor(color)
-                .symbolEffect(.bounce, value: value)
+                .imageScale(.medium)
             
             Text(value)
-                .font(.system(size: 32, weight: .black, design: .rounded))
-                .foregroundColor(primaryTextColor)
+                .font(.system(size: 28, weight: .semibold, design: .rounded))
+                .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                 .contentTransition(.numericText())
             
             Text(label)
-                .font(.caption)
-                .foregroundColor(secondaryTextColor)
+                .font(AppTheme.Typography.caption())
+                .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .background(cardBackgroundColor)
-        .cornerRadius(16)
-        .animation(.easeInOut(duration: 0.3), value: value)
+        .padding(.vertical, AppTheme.Spacing.xl)
+        .themeCard(colorScheme: colorScheme)
+        .animation(AppTheme.Animation.standard, value: value)
     }
 }
 
@@ -441,29 +358,26 @@ struct MetricCard: View {
 struct ChartCard<Content: View>: View {
     let title: String
     let subtitle: String
-    let primaryTextColor: Color
-    let secondaryTextColor: Color
-    let cardBackgroundColor: Color
     @ViewBuilder let content: () -> Content
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(primaryTextColor)
+                    .font(AppTheme.Typography.headline(weight: .semibold))
+                    .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                 
                 Text(subtitle)
-                    .font(.caption)
-                    .foregroundColor(secondaryTextColor)
+                    .font(AppTheme.Typography.caption())
+                    .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
             }
             
             content()
         }
-        .padding(20)
-        .background(cardBackgroundColor)
-        .cornerRadius(16)
-        .padding(.horizontal)
+        .padding(AppTheme.Spacing.cardPadding)
+        .themeCard(colorScheme: colorScheme)
+        .padding(.horizontal, AppTheme.Spacing.xl)
     }
 }
 
@@ -471,8 +385,6 @@ struct ChartCard<Content: View>: View {
 
 struct ProceedRateTrendChart: View {
     let events: [PauseEvent]
-    let accentColor: Color
-    let secondaryTextColor: Color
     
     struct DailyProceedRate: Identifiable {
         let id = UUID()
@@ -503,22 +415,22 @@ struct ProceedRateTrendChart: View {
                         x: .value("Date", data.date, unit: .day),
                         y: .value("Stayed Blocked %", data.stayedBlockedRate * 100)
                     )
-                    .foregroundStyle(.green)
-                    .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                    .foregroundStyle(AppTheme.Colors.success)
+                    .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
                     .interpolationMethod(.catmullRom)
                     
                     AreaMark(
                         x: .value("Date", data.date, unit: .day),
                         y: .value("Stayed Blocked %", data.stayedBlockedRate * 100)
                     )
-                    .foregroundStyle(.green.opacity(0.2))
+                    .foregroundStyle(AppTheme.Colors.success.opacity(0.15))
                     .interpolationMethod(.catmullRom)
                     
                     PointMark(
                         x: .value("Date", data.date, unit: .day),
                         y: .value("Stayed Blocked %", data.stayedBlockedRate * 100)
                     )
-                    .foregroundStyle(.green)
+                    .foregroundStyle(AppTheme.Colors.success)
                 }
             }
             .chartYScale(domain: 0...100)
@@ -528,18 +440,18 @@ struct ProceedRateTrendChart: View {
                         if let intValue = value.as(Double.self) {
                             Text("\(Int(intValue))%")
                                 .font(.caption2)
-                                .foregroundStyle(secondaryTextColor)
+                                .foregroundStyle(AppTheme.Colors.textSecondary)
                         }
                     }
                     AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                        .foregroundStyle(secondaryTextColor.opacity(0.2))
+                        .foregroundStyle(AppTheme.Colors.divider)
                 }
             }
             .chartXAxis {
                 AxisMarks(values: .stride(by: .day)) { value in
                     AxisValueLabel(format: .dateTime.month().day(), centered: true)
                         .font(.caption2)
-                        .foregroundStyle(secondaryTextColor)
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
                 }
             }
             .frame(height: 180)
@@ -551,8 +463,6 @@ struct ProceedRateTrendChart: View {
 
 struct TimeOfDayHeatmap: View {
     let events: [PauseEvent]
-    let accentColor: Color
-    let secondaryTextColor: Color
     
     struct HourData: Identifiable {
         let id = UUID()
@@ -590,8 +500,8 @@ struct TimeOfDayHeatmap: View {
                 )
                 .foregroundStyle(
                     data.count > 0
-                        ? accentColor.gradient
-                        : Color.gray.opacity(0.3).gradient
+                        ? AppTheme.Colors.accent.gradient
+                        : AppTheme.Colors.surface.gradient
                 )
                 .cornerRadius(4)
             }
@@ -602,11 +512,11 @@ struct TimeOfDayHeatmap: View {
                     if let intValue = value.as(Int.self) {
                         Text("\(intValue)")
                             .font(.caption2)
-                            .foregroundStyle(secondaryTextColor)
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
                     }
                 }
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                    .foregroundStyle(secondaryTextColor.opacity(0.2))
+                    .foregroundStyle(AppTheme.Colors.divider)
             }
         }
         .chartXAxis {
@@ -615,7 +525,7 @@ struct TimeOfDayHeatmap: View {
                     if let intValue = value.as(Int.self) {
                         Text("\(intValue):00")
                             .font(.caption2)
-                            .foregroundStyle(secondaryTextColor)
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
                     }
                 }
             }
@@ -628,9 +538,7 @@ struct TimeOfDayHeatmap: View {
 
 struct TopAppsChart: View {
     let events: [PauseEvent]
-    let accentColor: Color
-    let primaryTextColor: Color
-    let secondaryTextColor: Color
+    @Environment(\.colorScheme) private var colorScheme
     
     struct AppData: Identifiable {
         let id = UUID()
@@ -654,33 +562,31 @@ struct TopAppsChart: View {
     var body: some View {
         if topApps.isEmpty {
             Text("No app data yet")
-                .font(.subheadline)
-                .foregroundColor(secondaryTextColor)
+                .font(AppTheme.Typography.body())
+                .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                 .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.vertical, 20)
+                .padding(.vertical, AppTheme.Spacing.xl)
         } else {
-            VStack(spacing: 12) {
+            VStack(spacing: AppTheme.Spacing.md) {
                 ForEach(Array(topApps.enumerated()), id: \.element.id) { index, app in
-                    HStack(spacing: 12) {
+                    HStack(spacing: AppTheme.Spacing.md) {
                         Text("#\(index + 1)")
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundColor(secondaryTextColor)
+                            .font(AppTheme.Typography.caption(weight: .semibold))
+                            .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                             .frame(width: 30, alignment: .leading)
                         
                         Text(app.name)
-                            .font(.subheadline)
-                            .foregroundColor(primaryTextColor)
+                            .font(AppTheme.Typography.body())
+                            .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
                         Text("\(app.count)")
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundColor(accentColor)
+                            .font(AppTheme.Typography.headline(weight: .semibold))
+                            .foregroundColor(AppTheme.Colors.accent)
                     }
                     
                     if index < topApps.count - 1 {
-                        Divider()
-                            .background(secondaryTextColor.opacity(0.2))
+                        ThemeDivider()
                     }
                 }
             }
@@ -694,9 +600,7 @@ struct InsightsView: View {
     let events: [PauseEvent]
     let streak: Int
     let proceedRate: Double
-    let primaryTextColor: Color
-    let secondaryTextColor: Color
-    let accentColor: Color
+    @Environment(\.colorScheme) private var colorScheme
     
     struct Insight {
         let icon: String
@@ -817,17 +721,18 @@ struct InsightsView: View {
     }
     
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: AppTheme.Spacing.md) {
             ForEach(Array(insights.enumerated()), id: \.offset) { index, insight in
-                HStack(alignment: .top, spacing: 12) {
+                HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
                     Image(systemName: insight.icon)
                         .font(.system(size: 18))
                         .foregroundColor(insight.type.color)
+                        .imageScale(.medium)
                         .frame(width: 24)
                     
                     Text(insight.text)
-                        .font(.subheadline)
-                        .foregroundColor(primaryTextColor)
+                        .font(AppTheme.Typography.body())
+                        .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                         .fixedSize(horizontal: false, vertical: true)
                     
                     Spacer(minLength: 0)
@@ -835,8 +740,7 @@ struct InsightsView: View {
                 .padding(.vertical, 2)
                 
                 if index < insights.count - 1 {
-                    Divider()
-                        .background(secondaryTextColor.opacity(0.2))
+                    ThemeDivider()
                 }
             }
         }
@@ -847,8 +751,7 @@ struct InsightsView: View {
 
 struct ResponsePatternsView: View {
     let events: [PauseEvent]
-    let primaryTextColor: Color
-    let secondaryTextColor: Color
+    @Environment(\.colorScheme) private var colorScheme
     
     struct AnswerData: Identifiable {
         let id = UUID()
@@ -870,18 +773,18 @@ struct ResponsePatternsView: View {
     }
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: AppTheme.Spacing.md) {
             ForEach(topAnswers) { data in
                 HStack {
                     Text(data.answer)
-                        .font(.subheadline)
-                        .foregroundColor(primaryTextColor)
+                        .font(AppTheme.Typography.body())
+                        .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                     
                     Spacer()
                     
                     Text("\(data.count)×")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(secondaryTextColor)
+                        .font(AppTheme.Typography.headline(weight: .medium))
+                        .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                 }
                 .padding(.vertical, 4)
             }

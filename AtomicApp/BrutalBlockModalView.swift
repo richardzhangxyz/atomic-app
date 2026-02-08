@@ -34,69 +34,6 @@ struct BrutalBlockModalView: View {
     // Required phrase to unlock (intentional friction)
     private let requiredPhrase = "I am making an intentional choice"
     
-    // COLOR SYSTEM (Dark Mode Compatible)
-    // PRIMARY: Vivid gold
-    private let safetyYellow = Color(red: 1.0, green: 0.85, blue: 0.0) // #FFD900
-    // DARK MODE: Darker for reduced eye strain
-    private let safetyYellowDark = Color(red: 0.1, green: 0.1, blue: 0.1) // Dark gray
-    
-    // Background: bright yellow in light mode, darker golden in dark mode
-    private var bgColor: Color {
-        colorScheme == .dark ? safetyYellowDark : safetyYellow
-    }
-    
-    // DANGER: Hazard Red (only for "bad" unlock action)
-    private let hazardRed = Color(red: 0.757, green: 0.071, blue: 0.122) // #C1121F
-    
-    // Text colors (adaptive)
-    private var textPrimary: Color {
-        colorScheme == .dark 
-            ? Color(red: 1.0, green: 0.929, blue: 0.161) // Bright yellow
-            : Color.black
-    }
-    
-    private var textSecondary: Color {
-        colorScheme == .dark
-            ? Color(red: 0.9, green: 0.836, blue: 0.145)
-            : Color(red: 0.15, green: 0.15, blue: 0.15)
-    }
-    
-    private var textDeemphasized: Color {
-        colorScheme == .dark
-            ? textSecondary.opacity(0.6)
-            : Color.black.opacity(0.5)
-    }
-    
-    private var dividerColor: Color {
-        textSecondary.opacity(0.3)
-    }
-    
-    private var fieldBackground: Color {
-        colorScheme == .dark
-            ? Color.white.opacity(0.1)
-            : Color.white.opacity(0.4)
-    }
-    
-    private var primaryButtonBackground: Color {
-        colorScheme == .dark
-            ? Color(red: 1.0, green: 0.929, blue: 0.161)
-            : Color.black
-    }
-    
-    private var primaryButtonText: Color {
-        colorScheme == .dark
-            ? Color.black
-            : Color(red: 1.0, green: 0.85, blue: 0.0)
-    }
-    
-    private var dangerButtonText: Color {
-        Color.white
-    }
-    
-    private var disabledButtonBackground: Color {
-        textSecondary.opacity(0.2)
-    }
-    
     private var isUnlockEnabled: Bool {
         let phraseMatches = confirmationText.trimmingCharacters(in: .whitespaces).lowercased() == requiredPhrase.lowercased()
         let hasSignature = !signatureLines.isEmpty
@@ -106,12 +43,12 @@ struct BrutalBlockModalView: View {
     var body: some View {
         ZStack {
             // Background
-            bgColor.ignoresSafeArea()
+            AppTheme.Colors.background(for: colorScheme).ignoresSafeArea()
             
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack(spacing: 32) {
-                        Spacer().frame(height: 40)
+                    VStack(spacing: AppTheme.Spacing.xxxl) {
+                        Spacer().frame(height: AppTheme.Spacing.xxl)
                         
                         // MARK: - Header
                         headerSection
@@ -122,7 +59,7 @@ struct BrutalBlockModalView: View {
                         // MARK: - Reality Check
                         realityCheckSection
                         
-                        Spacer().frame(height: 20)
+                        Spacer().frame(height: AppTheme.Spacing.lg)
                         
                         // MARK: - Confirmation Input
                         confirmationSection
@@ -131,13 +68,13 @@ struct BrutalBlockModalView: View {
                         // MARK: - Actions
                         actionsSection
                         
-                        Spacer().frame(height: 40)
+                        Spacer().frame(height: AppTheme.Spacing.xxxl)
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, AppTheme.Spacing.xxl)
                 }
                 .onChange(of: focusedField) { _, newValue in
                     if newValue != nil {
-                        withAnimation {
+                        withAnimation(AppTheme.Animation.standard) {
                             proxy.scrollTo("confirmationSection", anchor: .center)
                         }
                     }
@@ -146,11 +83,10 @@ struct BrutalBlockModalView: View {
             .opacity(showView ? 1 : 0)
         }
         .onAppear {
-            // Light haptic on appear
-            let generator = UIImpactFeedbackGenerator(style: .medium)
+            let generator = UIImpactFeedbackGenerator(style: .light)
             generator.impactOccurred()
             
-            withAnimation(.easeOut(duration: 0.3)) {
+            withAnimation(AppTheme.Animation.slow) {
                 showView = true
             }
         }
@@ -159,14 +95,15 @@ struct BrutalBlockModalView: View {
     // MARK: - Header Section
     
     private var headerSection: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "lock.shield.fill")
-                .font(.system(size: 60))
-                .foregroundColor(Color(red: 0.757, green: 0.071, blue: 0.122))
+        VStack(spacing: AppTheme.Spacing.lg) {
+            Image(systemName: "lock.circle")
+                .font(.system(size: 48))
+                .foregroundColor(AppTheme.Colors.warning)
+                .imageScale(.large)
             
-            Text("TIME LIMIT REACHED")
-                .font(.system(size: 28, weight: .bold, design: .default))
-                .foregroundColor(textPrimary)
+            Text("Time limit reached")
+                .font(AppTheme.Typography.title(weight: .semibold))
+                .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                 .multilineTextAlignment(.center)
         }
     }
@@ -174,107 +111,105 @@ struct BrutalBlockModalView: View {
     // MARK: - Main Statement Section
     
     private var mainStatementSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: AppTheme.Spacing.sm) {
             if let minutes = minutesSpent, minutes > 0 {
                 Text("You've spent \(minutes) minutes today")
-                    .font(.system(size: 16, weight: .medium, design: .default))
-                    .foregroundColor(textSecondary)
+                    .font(AppTheme.Typography.body(weight: .medium))
+                    .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                     .multilineTextAlignment(.center)
             } else {
                 Text("Your daily limit has been reached")
-                    .font(.system(size: 16, weight: .medium, design: .default))
-                    .foregroundColor(textSecondary)
+                    .font(AppTheme.Typography.body(weight: .medium))
+                    .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                     .multilineTextAlignment(.center)
             }
             
             if let appName = appName {
                 Text("on \(appName)")
-                    .font(.system(size: 14, weight: .regular, design: .default))
-                    .foregroundColor(textDeemphasized)
+                    .font(AppTheme.Typography.caption())
+                    .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
             }
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, AppTheme.Spacing.md)
     }
     
     // MARK: - Reality Check Section
     
     private var realityCheckSection: some View {
-        VStack(spacing: 16) {
-            Rectangle()
-                .fill(dividerColor)
-                .frame(height: 1)
+        VStack(spacing: AppTheme.Spacing.lg) {
+            ThemeDivider()
             
             Text("Take a moment to consider why you set this limit")
-                .font(.system(size: 15, weight: .medium, design: .default))
-                .foregroundColor(textSecondary)
+                .font(AppTheme.Typography.body(weight: .medium))
+                .foregroundColor(AppTheme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
+                .padding(.horizontal, AppTheme.Spacing.xl)
             
-            Rectangle()
-                .fill(dividerColor)
-                .frame(height: 1)
+            ThemeDivider()
         }
     }
     
     // MARK: - Confirmation Section
     
     private var confirmationSection: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: AppTheme.Spacing.xxl) {
             // Phrase confirmation
-            VStack(spacing: 12) {
+            VStack(spacing: AppTheme.Spacing.md) {
                 Text("To unlock, type:")
-                    .font(.system(size: 13, weight: .medium, design: .default))
-                    .foregroundColor(textDeemphasized)
+                    .font(AppTheme.Typography.caption(weight: .medium))
+                    .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
                 
                 Text(requiredPhrase)
-                    .font(.system(size: 15, weight: .semibold, design: .default))
-                    .foregroundColor(textPrimary)
+                    .font(AppTheme.Typography.body(weight: .semibold))
+                    .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, AppTheme.Spacing.xl)
                 
                 TextField("", text: $confirmationText, axis: .vertical)
-                    .font(.system(size: 15, weight: .medium, design: .default))
-                    .foregroundColor(textPrimary)
+                    .font(AppTheme.Typography.body(weight: .medium))
+                    .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                     .multilineTextAlignment(.center)
                     .lineLimit(2...4)
                     .autocapitalization(.sentences)
                     .disableAutocorrection(true)
                     .focused($focusedField, equals: .confirmation)
-                    .padding(.vertical, 14)
-                    .padding(.horizontal, 20)
+                    .padding(.vertical, AppTheme.Spacing.lg)
+                    .padding(.horizontal, AppTheme.Spacing.xl)
                     .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(fieldBackground)
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                            .fill(AppTheme.Colors.surface(for: colorScheme))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12)
+                                RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
                                     .stroke(
-                                        confirmationText.trimmingCharacters(in: .whitespaces).lowercased() == requiredPhrase.lowercased() ? textPrimary : textDeemphasized,
-                                        lineWidth: 2
+                                        confirmationText.trimmingCharacters(in: .whitespaces).lowercased() == requiredPhrase.lowercased() 
+                                            ? AppTheme.Colors.accent 
+                                            : AppTheme.Colors.border(for: colorScheme),
+                                        lineWidth: 1.5
                                     )
                             )
                     )
             }
             
             // Signature canvas
-            VStack(spacing: 12) {
-                HStack(spacing: 8) {
+            VStack(spacing: AppTheme.Spacing.md) {
+                HStack(spacing: AppTheme.Spacing.sm) {
                     Rectangle()
-                        .fill(dividerColor)
+                        .fill(AppTheme.Colors.divider(for: colorScheme))
                         .frame(height: 1)
                     
                     Text("AND")
-                        .font(.system(size: 11, weight: .semibold, design: .default))
-                        .foregroundColor(textDeemphasized)
+                        .font(AppTheme.Typography.label(weight: .semibold))
+                        .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
                     
                     Rectangle()
-                        .fill(dividerColor)
+                        .fill(AppTheme.Colors.divider(for: colorScheme))
                         .frame(height: 1)
                 }
                 .padding(.horizontal, 40)
                 
                 Text("Sign your name with your finger:")
-                    .font(.system(size: 13, weight: .medium, design: .default))
-                    .foregroundColor(textDeemphasized)
+                    .font(AppTheme.Typography.caption(weight: .medium))
+                    .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
                 
                 // Signature pad
                 ZStack(alignment: .topTrailing) {
@@ -287,7 +222,7 @@ struct BrutalBlockModalView: View {
                             baselinePath.addLine(to: CGPoint(x: size.width - 20, y: baselineY))
                             context.stroke(
                                 baselinePath,
-                                with: .color(textDeemphasized.opacity(0.3)),
+                                with: .color(AppTheme.Colors.textMuted(for: colorScheme).opacity(0.3)),
                                 style: StrokeStyle(lineWidth: 1, dash: [5, 5])
                             )
                             
@@ -301,8 +236,8 @@ struct BrutalBlockModalView: View {
                                 }
                                 context.stroke(
                                     path,
-                                    with: .color(textPrimary),
-                                    style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
+                                    with: .color(AppTheme.Colors.textPrimary(for: colorScheme)),
+                                    style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round)
                                 )
                             }
                             
@@ -315,8 +250,8 @@ struct BrutalBlockModalView: View {
                                 }
                                 context.stroke(
                                     path,
-                                    with: .color(textPrimary),
-                                    style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
+                                    with: .color(AppTheme.Colors.textPrimary(for: colorScheme)),
+                                    style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round)
                                 )
                             }
                         }
@@ -327,24 +262,26 @@ struct BrutalBlockModalView: View {
                             VStack {
                                 Spacer()
                                 Text("Sign here")
-                                    .font(.system(size: 14, weight: .regular, design: .default))
+                                    .font(AppTheme.Typography.body())
                                     .italic()
-                                    .foregroundColor(textDeemphasized.opacity(0.5))
+                                    .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme).opacity(0.5))
                                     .offset(y: -35)
                                 Spacer()
                             }
                         }
                     }
-                    .background(fieldBackground)
-                    .cornerRadius(12)
+                    .background(AppTheme.Colors.surface(for: colorScheme))
+                    .cornerRadius(AppTheme.CornerRadius.md)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(!signatureLines.isEmpty ? textPrimary : textDeemphasized, lineWidth: 2)
+                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.md)
+                            .stroke(
+                                !signatureLines.isEmpty ? AppTheme.Colors.accent : AppTheme.Colors.border(for: colorScheme),
+                                lineWidth: 1.5
+                            )
                     )
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { value in
-                                // Light haptic on first touch of new stroke
                                 if currentLine.isEmpty {
                                     let generator = UIImpactFeedbackGenerator(style: .light)
                                     generator.impactOccurred()
@@ -362,22 +299,22 @@ struct BrutalBlockModalView: View {
                     // Clear button
                     if !signatureLines.isEmpty {
                         Button {
-                            withAnimation(.easeOut(duration: 0.2)) {
+                            withAnimation(AppTheme.Animation.quick) {
                                 signatureLines = []
                                 currentLine = []
                             }
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 20))
-                                .foregroundColor(textDeemphasized)
-                                .padding(8)
+                                .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
+                                .padding(AppTheme.Spacing.sm)
                         }
                     }
                 }
                 
                 Text("By signing, you acknowledge this is an intentional choice")
-                    .font(.system(size: 11, weight: .regular, design: .default))
-                    .foregroundColor(textDeemphasized)
+                    .font(AppTheme.Typography.caption())
+                    .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30)
             }
@@ -387,24 +324,18 @@ struct BrutalBlockModalView: View {
     // MARK: - Actions Section
     
     private var actionsSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: AppTheme.Spacing.lg) {
             // STAY BLOCKED (Primary action)
             Button {
                 logUnlockEvent(didProceed: false)
                 onStayBlocked()
             } label: {
                 Text("Stay Blocked")
-                    .font(.system(size: 16, weight: .bold, design: .default))
-                    .foregroundColor(primaryButtonText)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(primaryButtonBackground)
-                    )
+                    .font(AppTheme.Typography.body(weight: .medium))
+                    .themePrimaryButton(colorScheme: colorScheme)
             }
             
-            // UNLOCK (Requires typing phrase)
+            // UNLOCK (Requires typing phrase and signature)
             Button {
                 let generator = UIImpactFeedbackGenerator(style: .medium)
                 generator.impactOccurred()
@@ -412,21 +343,17 @@ struct BrutalBlockModalView: View {
                 logUnlockEvent(didProceed: true)
                 onUnlock()
             } label: {
-                Text("Unlock")
-                    .font(.system(size: 16, weight: .bold, design: .default))
-                    .foregroundColor(isUnlockEnabled ? dangerButtonText : textDeemphasized)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(isUnlockEnabled ? hazardRed : disabledButtonBackground)
-                    )
+                Text("Unlock apps")
+                    .font(AppTheme.Typography.body(weight: .medium))
+                    .foregroundColor(isUnlockEnabled ? AppTheme.Colors.destructive : AppTheme.Colors.textMuted(for: colorScheme))
+                    .themeOutlineButton(color: isUnlockEnabled ? AppTheme.Colors.destructive : AppTheme.Colors.textMuted(for: colorScheme))
             }
             .disabled(!isUnlockEnabled)
+            .opacity(isUnlockEnabled ? 1.0 : 0.5)
             
             Text("All unlock events are logged")
-                .font(.system(size: 12, weight: .regular, design: .default))
-                .foregroundColor(textDeemphasized)
+                .font(AppTheme.Typography.caption())
+                .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
         }
     }
     

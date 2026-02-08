@@ -14,18 +14,21 @@ class ShieldActionExtension: ShieldActionDelegate {
     override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         switch action {
         case .primaryButtonPressed:
-            // User tapped "Reflect & Unlock"
+            // User tapped "CONTINUE ANYWAY"
             // Store context for the main app
             let defaults = UserDefaults(suiteName: "group.com.01labs.kaizen")
             defaults?.set("App", forKey: "pendingUnlockAppName")
             defaults?.set(true, forKey: "pendingUnlockRequest")
             defaults?.set(Date().timeIntervalSince1970, forKey: "pendingUnlockTimestamp")
             
-            // Defer to the app - the shield stays until the app removes it
+            print("🔔 Pending unlock request stored - please open the main app")
+            
+            // Note: Extensions cannot directly open the main app
+            // User must manually open the app, which will detect the pending request
             completionHandler(.defer)
             
         case .secondaryButtonPressed:
-            // User tapped "Close" - just dismiss the shield attempt
+            // User tapped "RETURN TO LIFE" - just dismiss the shield attempt
             completionHandler(.close)
             
         @unknown default:
@@ -40,6 +43,9 @@ class ShieldActionExtension: ShieldActionDelegate {
             defaults?.set("Website", forKey: "pendingUnlockAppName")
             defaults?.set(true, forKey: "pendingUnlockRequest")
             defaults?.set(Date().timeIntervalSince1970, forKey: "pendingUnlockTimestamp")
+            
+            print("🔔 Pending unlock request stored - please open the main app")
+            
             completionHandler(.defer)
             
         case .secondaryButtonPressed:
@@ -57,6 +63,9 @@ class ShieldActionExtension: ShieldActionDelegate {
             defaults?.set("Category", forKey: "pendingUnlockAppName")
             defaults?.set(true, forKey: "pendingUnlockRequest")
             defaults?.set(Date().timeIntervalSince1970, forKey: "pendingUnlockTimestamp")
+            
+            print("🔔 Pending unlock request stored - please open the main app")
+            
             completionHandler(.defer)
             
         case .secondaryButtonPressed:

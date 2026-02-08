@@ -31,50 +31,6 @@ struct ContentView: View {
     @State private var toastMessage: String = ""
     @State private var showToast: Bool = false
     
-    // MARK: - Adaptive Color System
-    
-    // Background: Vivid gold in light mode, dark in dark mode
-    private var backgroundColor: Color {
-        colorScheme == .dark 
-            ? Color(red: 0.1, green: 0.1, blue: 0.1) 
-            : Color(red: 1.0, green: 0.85, blue: 0.0) // #FFD900
-    }
-    
-    // Primary text: Black in light mode, bright yellow in dark mode
-    private var primaryTextColor: Color {
-        colorScheme == .dark
-            ? Color(red: 1.0, green: 0.929, blue: 0.161) // #FFED29
-            : Color.black
-    }
-    
-    // Secondary text: Dark gray in light mode, dimmer yellow in dark mode
-    private var secondaryTextColor: Color {
-        colorScheme == .dark
-            ? Color(red: 0.9, green: 0.836, blue: 0.145)
-            : Color(red: 0.15, green: 0.15, blue: 0.15)
-    }
-    
-    // Card background: Semi-transparent white in light, semi-transparent yellow in dark
-    private var cardBackgroundColor: Color {
-        colorScheme == .dark
-            ? Color(red: 1.0, green: 0.929, blue: 0.161).opacity(0.15)
-            : Color.white.opacity(0.35)
-    }
-    
-    // Card background hover: Slightly more opaque
-    private var cardBackgroundColorHover: Color {
-        colorScheme == .dark
-            ? Color(red: 1.0, green: 0.929, blue: 0.161).opacity(0.25)
-            : Color.white.opacity(0.5)
-    }
-    
-    // Accent color for icons/highlights
-    private var accentColor: Color {
-        colorScheme == .dark
-            ? Color(red: 1.0, green: 0.929, blue: 0.161)
-            : Color.black
-    }
-    
     func requestAuthorization() async {
         do {
             try await center.requestAuthorization(for: .individual)
@@ -208,299 +164,338 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            // Adaptive background: Gold in light mode, dark in dark mode
-            backgroundColor
+            // Background
+            AppTheme.Colors.background(for: colorScheme)
                 .ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: AppTheme.Spacing.sectionSpacing) {
                     // Header
-                    VStack(spacing: 8) {
-                        HStack {
-                            Spacer()
+                    VStack(spacing: AppTheme.Spacing.md) {
+                        VStack(spacing: AppTheme.Spacing.xs) {
+                            Text("Atomic")
+                                .font(AppTheme.Typography.largeTitle(weight: .medium))
+                                .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                             
-                            VStack(spacing: 8) {
-                                Text("⚡ ATOMIC")
-                                    .font(.system(size: 40, weight: .black, design: .rounded))
-                                    .foregroundColor(primaryTextColor)
-                                
-                                Text("App time limits that actually work")
-                                    .font(.subheadline)
-                                    .foregroundColor(secondaryTextColor)
-                            }
-                            
-                            Spacer()
+                            Text("Intentional time boundaries")
+                                .font(AppTheme.Typography.caption())
+                                .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
                         }
+                        .padding(.top, AppTheme.Spacing.xl)
                         
-                        // Analytics Button - Prominent placement
+                        // Analytics Button
                         Button {
                             showAnalytics = true
                         } label: {
-                            HStack {
-                                Image(systemName: "chart.bar.fill")
-                                    .font(.headline)
+                            HStack(spacing: AppTheme.Spacing.sm) {
+                                Image(systemName: "chart.xyaxis.line")
+                                    .font(AppTheme.Typography.body())
+                                    .imageScale(.medium)
                                 Text("View Analytics")
-                                    .font(.system(size: 16, weight: .semibold))
+                                    .font(AppTheme.Typography.body(weight: .medium))
                             }
-                            .foregroundColor(colorScheme == .dark ? .black : .white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(colorScheme == .dark ? accentColor : Color.black)
-                            .cornerRadius(12)
+                            .themePrimaryButton()
                         }
-                        .padding(.horizontal)
-                        .padding(.top, 12)
+                        .padding(.horizontal, AppTheme.Spacing.xl)
                     }
-                    .padding(.top, 20)
                     
-                    // BLOCKED STATE - High urgency
+                    // BLOCKED STATE - Calm but firm
                     if isBlocked {
-                        VStack(spacing: 16) {
-                            Image(systemName: "lock.shield.fill")
-                                .font(.system(size: 50))
-                                .foregroundColor(Color(red: 0.757, green: 0.071, blue: 0.122))
-                            
-                            Text("APPS BLOCKED")
-                                .font(.system(size: 26, weight: .bold))
-                                .foregroundColor(primaryTextColor)
-                            
-                            Text("Time limit reached")
-                                .font(.body)
-                                .foregroundColor(secondaryTextColor)
+                        VStack(spacing: AppTheme.Spacing.lg) {
+                            HStack(spacing: AppTheme.Spacing.md) {
+                                Image(systemName: "lock.circle")
+                                    .font(.system(size: 22))
+                                    .foregroundColor(AppTheme.Colors.warning)
+                                    .imageScale(.medium)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Time limit reached")
+                                        .font(AppTheme.Typography.headline(weight: .medium))
+                                        .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
+                                    
+                                    Text("Apps are paused")
+                                        .font(AppTheme.Typography.caption())
+                                        .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
+                                }
+                                
+                                Spacer()
+                            }
+                            .padding(AppTheme.Spacing.cardPadding)
+                            .themeCard(colorScheme: colorScheme)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: AppTheme.CornerRadius.card)
+                                    .stroke(AppTheme.Colors.warning.opacity(0.3), lineWidth: 1)
+                                    .padding(.leading, 0)
+                                    .frame(width: 3)
+                                    .clipShape(
+                                        RoundedRectangle(cornerRadius: AppTheme.CornerRadius.card)
+                                    ),
+                                alignment: .leading
+                            )
+                            .padding(.horizontal, AppTheme.Spacing.xl)
                             
                             Button {
                                 showPauseModal = true
                             } label: {
-                                Text("Unlock")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 16)
-                                    .background(Color(red: 0.757, green: 0.071, blue: 0.122))
-                                    .cornerRadius(12)
+                                Text("Unlock apps")
+                                    .font(AppTheme.Typography.body(weight: .medium))
+                                    .themeOutlineButton(color: AppTheme.Colors.destructive)
                             }
-                            .padding(.horizontal)
+                            .padding(.horizontal, AppTheme.Spacing.xl)
                         }
-                        .padding(.vertical, 20)
-                        .background(cardBackgroundColor)
-                        .cornerRadius(16)
-                        .padding(.horizontal)
                     }
                     
                     // SETUP SECTION
-                    VStack(spacing: 20) {
-                        VStack(spacing: 8) {
-                            HStack {
-                                Text("SETUP")
-                                    .font(.system(size: 20, weight: .bold))
-                                    .foregroundColor(primaryTextColor)
-                                Spacer()
-                            }
+                    VStack(spacing: AppTheme.Spacing.lg) {
+                        HStack {
+                            Text("Setup")
+                                .themeUppercaseLabel(colorScheme: colorScheme)
+                            Spacer()
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, AppTheme.Spacing.xl)
                         
-                        // App Selection
-                        VStack(spacing: 12) {
-                            Button {
-                                isPresented = true
-                            } label: {
-                                HStack {
-                                    Image(systemName: selection.applications.isEmpty ? "app.badge.plus" : "app.badge.checkmark.fill")
-                                        .font(.title2)
-                                        .foregroundColor(accentColor)
+                        // App Selection Card
+                        Button {
+                            isPresented = true
+                        } label: {
+                            HStack(spacing: AppTheme.Spacing.md) {
+                                Image(systemName: selection.applications.isEmpty ? "app" : "app.badge.checkmark")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
+                                    .imageScale(.medium)
+                                    .frame(width: 24)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Apps Selected")
+                                        .font(AppTheme.Typography.body(weight: .medium))
+                                        .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                                     
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(selection.applications.isEmpty ? "Choose Apps to Control" : "Apps Selected")
-                                            .font(.headline)
-                                            .foregroundColor(primaryTextColor)
-                                        
-                                        if !selection.applications.isEmpty {
-                                            Text("\(selection.applications.count) app(s) · \(selection.categories.count) category · \(selection.webDomains.count) domain(s)")
-                                                .font(.caption)
-                                                .foregroundColor(secondaryTextColor)
-                                        }
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(secondaryTextColor.opacity(0.5))
+                                    Text("\(selection.applications.count) app · \(selection.categories.count) categories · \(selection.webDomains.count) domains")
+                                        .font(AppTheme.Typography.caption())
+                                        .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                                 }
-                                .padding(20)
-                                .background(cardBackgroundColor)
-                                .cornerRadius(16)
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
                             }
-                            .padding(.horizontal)
+                            .padding(AppTheme.Spacing.cardPadding)
+                            .themeCard(colorScheme: colorScheme)
                         }
+                        .padding(.horizontal, AppTheme.Spacing.xl)
                         
-                        // Time Limit
-                        VStack(spacing: 12) {
-                            HStack {
-                                Image(systemName: "clock.fill")
-                                    .font(.title2)
-                                    .foregroundColor(accentColor)
+                        // Daily Limit Card
+                        VStack(spacing: AppTheme.Spacing.cardSpacing) {
+                            HStack(spacing: AppTheme.Spacing.md) {
+                                Image(systemName: "clock")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
+                                    .imageScale(.medium)
+                                    .frame(width: 24)
                                 
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Daily Limit")
-                                        .font(.headline)
-                                        .foregroundColor(primaryTextColor)
+                                        .font(AppTheme.Typography.body(weight: .medium))
+                                        .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
+                                    
                                     Text("Set your boundary")
-                                        .font(.caption)
-                                        .foregroundColor(secondaryTextColor)
+                                        .font(AppTheme.Typography.caption())
+                                        .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                                 }
                                 
                                 Spacer()
                                 
                                 Text("\(dailyLimitMinutes) min")
-                                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                                    .foregroundColor(primaryTextColor)
+                                    .font(AppTheme.Typography.title(weight: .semibold))
+                                    .foregroundColor(AppTheme.Colors.accent)
                             }
-                            .padding(20)
-                            .background(cardBackgroundColor)
-                            .cornerRadius(16)
+                            .padding(AppTheme.Spacing.cardPadding)
+                            .themeCard(colorScheme: colorScheme)
                             
-                            Stepper("", value: $dailyLimitMinutes, in: 1...480, step: 1)
-                                .labelsHidden()
-                                .padding(.horizontal)
-                        }
-                        .padding(.horizontal)
-                        
-                        // Action Buttons
-                        VStack(spacing: 12) {
-                            if !isMonitoring {
+                            // Stepper controls
+                            HStack(spacing: AppTheme.Spacing.md) {
                                 Button {
-                                    setUpMonitoring()
-                                    isMonitoring = true
-                                } label: {
-                                    HStack {
-                                        Image(systemName: "bolt.fill")
-                                            .font(.title2)
-                                        Text("Start Monitoring")
-                                            .font(.system(size: 18, weight: .bold))
+                                    if dailyLimitMinutes > 1 {
+                                        dailyLimitMinutes -= 1
                                     }
-                                    .foregroundColor(colorScheme == .dark ? Color.black : Color.white)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 16)
-                                    .background(colorScheme == .dark ? Color(red: 1.0, green: 0.929, blue: 0.161) : Color.black)
-                                    .cornerRadius(12)
+                                } label: {
+                                    Image(systemName: "minus.circle")
+                                        .font(.system(size: 28))
+                                        .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                                 }
-                                .disabled(selection.applications.isEmpty)
-                                .opacity(selection.applications.isEmpty ? 0.5 : 1.0)
+                                .disabled(dailyLimitMinutes <= 1)
+                                .opacity(dailyLimitMinutes <= 1 ? 0.3 : 1.0)
+                                
+                                Spacer()
+                                
+                                Button {
+                                    if dailyLimitMinutes < 480 {
+                                        dailyLimitMinutes += 1
+                                    }
+                                } label: {
+                                    Image(systemName: "plus.circle")
+                                        .font(.system(size: 28))
+                                        .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
+                                }
+                                .disabled(dailyLimitMinutes >= 480)
+                                .opacity(dailyLimitMinutes >= 480 ? 0.3 : 1.0)
                             }
+                            .padding(.horizontal, AppTheme.Spacing.xxl)
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, AppTheme.Spacing.xl)
+                        
+                        // Start Monitoring Button
+                        if !isMonitoring {
+                            Button {
+                                setUpMonitoring()
+                                isMonitoring = true
+                            } label: {
+                                HStack(spacing: AppTheme.Spacing.sm) {
+                                    Image(systemName: "play.circle")
+                                        .imageScale(.medium)
+                                    Text("Start Monitoring")
+                                        .font(AppTheme.Typography.body(weight: .medium))
+                                }
+                                .themePrimaryButton(isEnabled: !selection.applications.isEmpty, colorScheme: colorScheme)
+                            }
+                            .disabled(selection.applications.isEmpty)
+                            .padding(.horizontal, AppTheme.Spacing.xl)
+                        }
                     }
                     
                     // MONITORING STATUS
                     if isMonitoring {
-                        VStack(spacing: 16) {
-                            HStack(spacing: 12) {
-                                Circle()
-                                    .fill(.green)
-                                    .frame(width: 12, height: 12)
-                                
-                                Text("ACTIVE")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(primaryTextColor)
-                                
+                        VStack(spacing: AppTheme.Spacing.lg) {
+                            HStack(spacing: AppTheme.Spacing.sm) {
+                                ThemeStatusIndicator(isActive: true)
                                 Spacer()
                             }
                             
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(spacing: AppTheme.Spacing.md) {
                                 HStack {
                                     Text("Monitoring")
-                                        .font(.subheadline)
-                                        .foregroundColor(secondaryTextColor)
+                                        .font(AppTheme.Typography.body())
+                                        .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                                     Spacer()
-                                    Text("\(selection.applications.count) app(s)")
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(primaryTextColor)
+                                    Text("\(selection.applications.count) app\(selection.applications.count == 1 ? "" : "s")")
+                                        .font(AppTheme.Typography.body(weight: .medium))
+                                        .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
                                 }
+                                
+                                ThemeDivider()
                                 
                                 HStack {
                                     Text("Daily Limit")
-                                        .font(.subheadline)
-                                        .foregroundColor(secondaryTextColor)
+                                        .font(AppTheme.Typography.body())
+                                        .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                                     Spacer()
                                     Text("\(dailyLimitMinutes) min")
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(primaryTextColor)
+                                        .font(AppTheme.Typography.body(weight: .medium))
+                                        .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
+                                }
+                                
+                                // Progress bar (placeholder for now)
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack {
+                                        Text("Today's usage")
+                                            .font(AppTheme.Typography.caption())
+                                            .foregroundColor(AppTheme.Colors.textMuted(for: colorScheme))
+                                        Spacer()
+                                    }
+                                    ThemeProgressBar(progress: 0.0)
                                 }
                             }
                         }
-                        .padding(20)
-                        .background(cardBackgroundColor)
-                        .cornerRadius(16)
-                        .padding(.horizontal)
+                        .padding(AppTheme.Spacing.cardPadding)
+                        .themeCard(colorScheme: colorScheme)
+                        .padding(.horizontal, AppTheme.Spacing.xl)
                     }
                     
-                    // TESTING & LOGS (condensed)
-                    VStack(spacing: 12) {
+                    // DEBUG QUICK TEST
+                    VStack(spacing: AppTheme.Spacing.lg) {
                         HStack {
-                            Text("⚙️ TESTING")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(secondaryTextColor.opacity(0.7))
+                            Text("Debug")
+                                .themeUppercaseLabel(colorScheme: colorScheme)
                             Spacer()
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, AppTheme.Spacing.xl)
                         
-                        HStack(spacing: 12) {
-                            Button {
-                                unlockApps()
-                                setUpMonitoringWithSeconds(5)
-                                isMonitoring = true
-                                showToast(message: "⚡ 5 sec test started")
-                            } label: {
-                                HStack {
-                                    Image(systemName: "hare.fill")
-                                    Text("5s Test")
-                                        .fontWeight(.semibold)
+                        // Prominent Debug Reset & 5s Test Button
+                        Button {
+                            unlockApps()
+                            setUpMonitoringWithSeconds(5)
+                            isMonitoring = true
+                            showToast(message: "✅ Reset complete • 5s limit active")
+                        } label: {
+                            HStack(spacing: AppTheme.Spacing.md) {
+                                Image(systemName: "arrow.counterclockwise.circle.fill")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(AppTheme.Colors.accent)
+                                    .imageScale(.medium)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Reset & Quick Test")
+                                        .font(AppTheme.Typography.body(weight: .semibold))
+                                        .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
+                                    
+                                    Text("Unlocks all apps, sets 5 second limit")
+                                        .font(AppTheme.Typography.caption())
+                                        .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                                 }
-                                .font(.subheadline)
-                                .foregroundColor(primaryTextColor)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(cardBackgroundColorHover)
-                                .cornerRadius(12)
+                                
+                                Spacer()
+                                
+                                Image(systemName: "timer")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(AppTheme.Colors.accent)
                             }
-                            
+                            .padding(AppTheme.Spacing.cardPadding)
+                            .themeCard(colorScheme: colorScheme)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: AppTheme.CornerRadius.card)
+                                    .stroke(AppTheme.Colors.accent.opacity(0.2), lineWidth: 1.5)
+                            )
+                        }
+                        .padding(.horizontal, AppTheme.Spacing.xl)
+                        
+                        // Other testing tools
+                        HStack(spacing: AppTheme.Spacing.cardSpacing) {
                             Button {
                                 showPauseModal = true
                             } label: {
-                                HStack {
-                                    Image(systemName: "shield.fill")
-                                    Text("Test Shield")
-                                        .fontWeight(.semibold)
+                                VStack(spacing: 6) {
+                                    Image(systemName: "shield")
+                                        .font(.system(size: 18))
+                                        .imageScale(.medium)
+                                    Text("Shield")
+                                        .font(AppTheme.Typography.caption(weight: .medium))
                                 }
-                                .font(.subheadline)
-                                .foregroundColor(primaryTextColor)
+                                .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(cardBackgroundColorHover)
-                                .cornerRadius(12)
+                                .padding(.vertical, AppTheme.Spacing.lg)
+                                .themeCard(colorScheme: colorScheme)
                             }
                             
                             Button {
                                 showEventLog = true
                             } label: {
-                                HStack {
-                                    Image(systemName: "chart.bar.fill")
+                                VStack(spacing: 6) {
+                                    Image(systemName: "list.bullet")
+                                        .font(.system(size: 18))
+                                        .imageScale(.medium)
                                     Text("Log")
-                                        .fontWeight(.semibold)
+                                        .font(AppTheme.Typography.caption(weight: .medium))
                                 }
-                                .font(.subheadline)
-                                .foregroundColor(primaryTextColor)
+                                .foregroundColor(AppTheme.Colors.textSecondary(for: colorScheme))
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(cardBackgroundColorHover)
-                                .cornerRadius(12)
+                                .padding(.vertical, AppTheme.Spacing.lg)
+                                .themeCard(colorScheme: colorScheme)
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, AppTheme.Spacing.xl)
                     }
-                    .padding(.top, 8)
                     .padding(.bottom, 40)
                 }
             }
@@ -511,14 +506,17 @@ struct ContentView: View {
                     Spacer()
                     
                     Text(toastMessage)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 14)
+                        .font(AppTheme.Typography.body(weight: .medium))
+                        .foregroundColor(AppTheme.Colors.textPrimary(for: colorScheme))
+                        .padding(.horizontal, AppTheme.Spacing.xl)
+                        .padding(.vertical, AppTheme.Spacing.md)
                         .background(
                             Capsule()
-                                .fill(Color.black.opacity(0.85))
+                                .fill(AppTheme.Colors.surfaceElevated(for: colorScheme))
+                                .overlay(
+                                    Capsule()
+                                        .stroke(AppTheme.Colors.border(for: colorScheme), lineWidth: 1)
+                                )
                         )
                         .padding(.bottom, 40)
                 }
